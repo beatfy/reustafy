@@ -741,15 +741,15 @@ export default function Dashboard() {
   const getTableStatusStyle = (status: Table['status']) => {
     switch (status) {
       case 'free':
-        return 'bg-emerald-500/10 border-emerald-500/40 text-emerald-400 hover:bg-emerald-500/20';
+        return 'bg-emerald-50 text-emerald-700 border-emerald-200 hover:bg-emerald-100/70';
       case 'ordered':
-        return 'bg-amber-500/10 border-amber-500/40 text-amber-400 hover:bg-amber-500/20';
+        return 'bg-amber-50 text-amber-700 border-amber-200 hover:bg-amber-100/70';
       case 'eating':
-        return 'bg-indigo-500/10 border-indigo-500/40 text-indigo-400 hover:bg-indigo-500/20';
+        return 'bg-blue-50 text-blue-700 border-blue-200 hover:bg-blue-100/70';
       case 'bill':
-        return 'bg-red-500/10 border-red-500/40 text-red-400 hover:bg-red-500/20';
+        return 'bg-rose-50 text-rose-700 border-rose-200 hover:bg-rose-100/70';
       case 'reserved':
-        return 'bg-blue-500/10 border-blue-500/40 text-blue-400 hover:bg-blue-500/20';
+        return 'bg-slate-50 text-slate-700 border-slate-200 hover:bg-slate-100/70';
     }
   };
 
@@ -773,57 +773,57 @@ export default function Dashboard() {
   };
 
   return (
-    <div className="min-h-screen bg-[#090d16] flex flex-col text-slate-100 pb-12">
+    <div className="min-h-screen bg-slate-50 flex flex-col text-slate-800 pb-12">
       
       {/* 1. TOP HEADER NAVIGATION */}
-      <header className="border-b border-white/5 bg-slate-950/40 backdrop-blur-md sticky top-0 z-30 px-6 py-4 flex flex-col md:flex-row justify-between items-center gap-4">
+      <header className="border-b border-slate-200 bg-white/80 backdrop-blur-md sticky top-0 z-30 px-6 py-4 flex flex-col md:flex-row justify-between items-center gap-4">
         
         {/* Brand */}
         <div className="flex items-center gap-3">
-          <div className="bg-indigo-600 p-2 rounded-xl text-white">
+          <div className="bg-slate-900 p-2 rounded-xl text-white">
             <Utensils className="h-6 w-6" />
           </div>
           <div>
             <div className="flex items-center gap-2">
-              <span className="font-bold text-lg leading-none">Reustafy</span>
-              <span className="text-[10px] uppercase font-bold px-2 py-0.5 rounded-full border border-indigo-500/30 bg-indigo-500/10 text-indigo-300">
+              <span className="font-bold text-lg leading-none text-slate-900">Reustafy</span>
+              <span className="text-[10px] uppercase font-bold px-2 py-0.5 rounded-full border border-slate-200 bg-slate-100 text-slate-700">
                 Tenant: {user.tenantName}
               </span>
             </div>
-            <p className="text-[10px] text-slate-400 mt-1">Conectado como {user.name} ({user.role})</p>
+            <p className="text-[10px] text-slate-500 mt-1">Conectado como {user.name} ({user.role})</p>
           </div>
         </div>
 
         {/* Dynamic Navigation Tabs */}
-        <div className="flex bg-white/5 p-1 rounded-xl border border-white/10 gap-1 text-sm">
+        <div className="flex bg-slate-100 p-1 rounded-xl border border-slate-200 gap-1 text-sm">
           <button 
             onClick={() => setActiveTab('operations')}
-            className={`px-4 py-1.5 rounded-lg font-medium transition flex items-center gap-1.5 ${activeTab === 'operations' ? 'bg-indigo-600 text-white' : 'text-slate-400 hover:text-white'}`}
+            className={`px-4 py-1.5 rounded-lg font-medium transition flex items-center gap-1.5 ${activeTab === 'operations' ? 'bg-white text-slate-900 shadow-sm border border-slate-200/50' : 'text-slate-600 hover:text-slate-900'}`}
           >
-            <MapPin className="h-4 w-4" /> Operaciones
+            <MapPin className="h-4 w-4 text-indigo-500" /> Operaciones
           </button>
           
           <button 
             onClick={() => setActiveTab('marketing')}
-            className={`px-4 py-1.5 rounded-lg font-medium transition flex items-center gap-1.5 ${activeTab === 'marketing' ? 'bg-indigo-600 text-white' : 'text-slate-400 hover:text-white'}`}
+            className={`px-4 py-1.5 rounded-lg font-medium transition flex items-center gap-1.5 ${activeTab === 'marketing' ? 'bg-white text-slate-900 shadow-sm border border-slate-200/50' : 'text-slate-600 hover:text-slate-900'}`}
           >
-            {!isTierEnough('medium') && <Lock className="h-3 w-3 text-slate-500" />}
-            <UserCheck className="h-4 w-4" /> Fidelización
+            {!isTierEnough('medium') && <Lock className="h-3 w-3 text-slate-400" />}
+            <UserCheck className="h-4 w-4 text-emerald-500" /> Fidelización
           </button>
           
           <button 
             onClick={() => setActiveTab('finance')}
-            className={`px-4 py-1.5 rounded-lg font-medium transition flex items-center gap-1.5 ${activeTab === 'finance' ? 'bg-indigo-600 text-white' : 'text-slate-400 hover:text-white'}`}
+            className={`px-4 py-1.5 rounded-lg font-medium transition flex items-center gap-1.5 ${activeTab === 'finance' ? 'bg-white text-slate-900 shadow-sm border border-slate-200/50' : 'text-slate-600 hover:text-slate-900'}`}
           >
-            {!isTierEnough('premium') && <Lock className="h-3 w-3 text-slate-500" />}
-            <Coins className="h-4 w-4" /> Finanzas & BI
+            {!isTierEnough('premium') && <Lock className="h-3 w-3 text-slate-400" />}
+            <Coins className="h-4 w-4 text-amber-500" /> Finanzas & BI
           </button>
           
           <button 
             onClick={() => setActiveTab('config')}
-            className={`px-4 py-1.5 rounded-lg font-medium transition flex items-center gap-1.5 ${activeTab === 'config' ? 'bg-indigo-600 text-white' : 'text-slate-400 hover:text-white'}`}
+            className={`px-4 py-1.5 rounded-lg font-medium transition flex items-center gap-1.5 ${activeTab === 'config' ? 'bg-white text-slate-900 shadow-sm border border-slate-200/50' : 'text-slate-600 hover:text-slate-900'}`}
           >
-            <Settings className="h-4 w-4" /> Configuración
+            <Settings className="h-4 w-4 text-slate-500" /> Configuración
           </button>
         </div>
 
@@ -833,20 +833,20 @@ export default function Dashboard() {
           {/* Quick link to Waiter and Kitchen interfaces */}
           <button 
             onClick={() => router.push('/waiter')}
-            className="flex items-center gap-1.5 px-3 py-1.5 text-xs bg-slate-800 hover:bg-slate-700 text-slate-300 font-semibold rounded-lg transition"
+            className="flex items-center gap-1.5 px-3 py-1.5 text-xs bg-white hover:bg-slate-100 text-slate-700 border border-slate-200 font-semibold rounded-lg transition"
           >
             <Tablet className="h-3.5 w-3.5" /> Camarero PWA
           </button>
           <button 
             onClick={() => router.push('/kitchen')}
-            className="flex items-center gap-1.5 px-3 py-1.5 text-xs bg-slate-800 hover:bg-slate-700 text-slate-300 font-semibold rounded-lg transition"
+            className="flex items-center gap-1.5 px-3 py-1.5 text-xs bg-white hover:bg-slate-100 text-slate-700 border border-slate-200 font-semibold rounded-lg transition"
           >
             <ChefHat className="h-3.5 w-3.5" /> Cocina KDS
           </button>
           
           <button 
             onClick={() => fetchData()}
-            className="p-2 bg-white/5 hover:bg-white/10 rounded-lg text-slate-300 hover:text-white transition"
+            className="p-2 bg-white hover:bg-slate-100 rounded-lg text-slate-600 border border-slate-200 transition"
             title="Refrescar datos"
           >
             <RefreshCw className="h-4 w-4" />
@@ -854,7 +854,7 @@ export default function Dashboard() {
           
           <button 
             onClick={handleLogout}
-            className="flex items-center gap-1.5 bg-red-600/20 hover:bg-red-600 text-red-400 hover:text-white border border-red-500/20 px-3 py-1.5 text-xs font-semibold rounded-lg transition"
+            className="flex items-center gap-1.5 bg-red-50 hover:bg-red-100 text-red-600 border border-red-200 px-3 py-1.5 text-xs font-semibold rounded-lg transition"
           >
             <LogOut className="h-3.5 w-3.5" /> Salir
           </button>
@@ -867,8 +867,8 @@ export default function Dashboard() {
 
         {/* System Error notification if any */}
         {error && (
-          <div className="p-4 rounded-xl bg-red-500/10 border border-red-500/20 text-sm text-red-300 flex items-center gap-2">
-            <AlertTriangle className="h-5 w-5 text-red-400" />
+          <div className="p-4 rounded-xl bg-red-50 border border-red-200 text-sm text-red-700 flex items-center gap-2">
+            <AlertTriangle className="h-5 w-5 text-red-500" />
             <span>{error}</span>
           </div>
         )}
@@ -881,21 +881,21 @@ export default function Dashboard() {
             <section className="lg:col-span-8 glass-panel rounded-2xl p-6 flex flex-col gap-6 min-h-[500px]">
               
               {/* Header inside Map */}
-              <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 pb-4 border-b border-white/5">
+              <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 pb-4 border-b border-slate-100">
                 <div>
-                  <h2 className="text-xl font-bold text-white flex items-center gap-2">
-                    <Utensils className="h-5 w-5 text-indigo-400" /> Map de Mesas
+                  <h2 className="text-xl font-bold text-slate-900 flex items-center gap-2">
+                    <Utensils className="h-5 w-5 text-indigo-500" /> Mapa de Mesas
                   </h2>
-                  <p className="text-xs text-slate-400">Control interactivo de estados en tiempo real.</p>
+                  <p className="text-xs text-slate-500">Control interactivo de estados en tiempo real.</p>
                 </div>
 
                 {/* Zone Filter */}
-                <div className="flex bg-white/5 border border-white/10 rounded-lg p-0.5 text-xs">
+                <div className="flex bg-slate-100 border border-slate-200 rounded-lg p-0.5 text-xs">
                   {['all', 'salon', 'terrace', 'bar'].map((zone) => (
                     <button
                       key={zone}
                       onClick={() => setSelectedZone(zone as any)}
-                      className={`px-3 py-1 rounded-md font-medium capitalize transition ${selectedZone === zone ? 'bg-indigo-600 text-white' : 'text-slate-400 hover:text-white'}`}
+                      className={`px-3 py-1 rounded-md font-medium capitalize transition ${selectedZone === zone ? 'bg-white text-slate-900 shadow-sm' : 'text-slate-500 hover:text-slate-800'}`}
                     >
                       {zone === 'all' ? 'Ver Todas' : zone}
                     </button>
@@ -906,10 +906,10 @@ export default function Dashboard() {
               {/* Grid Layout of Tables */}
               {loading ? (
                 <div className="flex-1 flex items-center justify-center">
-                  <RefreshCw className="h-6 w-6 animate-spin text-indigo-400" />
+                  <RefreshCw className="h-6 w-6 animate-spin text-indigo-500" />
                 </div>
               ) : filteredTables.length === 0 ? (
-                <div className="flex-1 flex flex-col items-center justify-center text-slate-500 py-12">
+                <div className="flex-1 flex flex-col items-center justify-center text-slate-400 py-12">
                   <AlertTriangle className="h-8 w-8 mb-2" />
                   <p className="text-sm font-semibold">No se encontraron mesas en esta zona.</p>
                 </div>
@@ -922,21 +922,21 @@ export default function Dashboard() {
                       <div
                         key={table.id}
                         onClick={() => setSelectedTable(table)}
-                        className={`p-4 rounded-xl border cursor-pointer glass-panel-hover flex flex-col justify-between h-36 transition-all ${getTableStatusStyle(table.status)} ${isSelected ? 'ring-2 ring-indigo-500 border-indigo-500' : ''}`}
+                        className={`p-4 rounded-xl border cursor-pointer glass-panel-hover flex flex-col justify-between h-36 transition-all ${getTableStatusStyle(table.status)} ${isSelected ? 'ring-2 ring-indigo-400 border-indigo-400' : ''}`}
                       >
                         <div className="flex justify-between items-start">
                           <div>
                             <div className="flex items-center gap-1">
                               <span className="text-2xl font-bold block">{table.tableNumber}</span>
                               {table.joinedWithTableId && (
-                                <span className="bg-indigo-500/20 text-indigo-300 border border-indigo-500/30 px-1 py-0.5 rounded text-[8px] font-bold" title="Unida">
+                                <span className="bg-indigo-100 text-indigo-600 border border-indigo-200 px-1 py-0.5 rounded text-[8px] font-bold" title="Unida">
                                   🔗
                                 </span>
                               )}
                             </div>
-                            <span className="text-[10px] uppercase font-semibold text-slate-400 tracking-wider block mt-0.5">{table.zone}</span>
+                            <span className="text-[10px] uppercase font-semibold text-slate-500 tracking-wider block mt-0.5">{table.zone}</span>
                           </div>
-                          <span className="text-xs font-semibold px-2 py-0.5 rounded-full border bg-white/5 border-white/10 capitalize">
+                          <span className="text-xs font-semibold px-2 py-0.5 rounded-full border bg-slate-100 border-slate-200 text-slate-600 capitalize">
                             Pax: {table.capacity}
                           </span>
                         </div>
@@ -954,10 +954,10 @@ export default function Dashboard() {
 
               {/* Status Update Modal / Inline Panel if a Table is Selected */}
               {selectedTable && (
-                <div className="mt-4 p-4 rounded-xl bg-white/5 border border-indigo-500/20 backdrop-blur-md flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 animate-fadeIn">
+                <div className="mt-4 p-4 rounded-xl bg-slate-50 border border-slate-200 flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
                   <div>
-                    <h3 className="font-bold text-white">Modificar Mesa {selectedTable.tableNumber}</h3>
-                    <p className="text-xs text-slate-400">Selecciona un nuevo estado para guardar en la base de datos.</p>
+                    <h3 className="font-bold text-slate-900">Modificar Mesa {selectedTable.tableNumber}</h3>
+                    <p className="text-xs text-slate-500">Selecciona un nuevo estado para guardar en la base de datos.</p>
                   </div>
 
                   <div className="flex flex-wrap gap-2">
@@ -966,14 +966,14 @@ export default function Dashboard() {
                         key={status}
                         disabled={updating}
                         onClick={() => handleUpdateTableStatus(selectedTable.id, status)}
-                        className={`text-xs font-bold px-3 py-1.5 rounded-lg border transition ${selectedTable.status === status ? 'bg-indigo-600 text-white' : 'bg-slate-800 text-slate-300 border-white/5 hover:bg-slate-700'}`}
+                        className={`text-xs font-bold px-3 py-1.5 rounded-lg border transition ${selectedTable.status === status ? 'bg-slate-900 text-white border-slate-900' : 'bg-white text-slate-700 border-slate-200 hover:bg-slate-100'}`}
                       >
                         {status.toUpperCase()}
                       </button>
                     ))}
                     <button 
                       onClick={() => setSelectedTable(null)}
-                      className="text-xs font-bold px-3 py-1.5 rounded-lg bg-slate-900 border border-white/10 text-slate-400 hover:text-white"
+                      className="text-xs font-bold px-3 py-1.5 rounded-lg bg-white border border-slate-200 text-slate-500 hover:text-slate-800"
                     >
                       Cancelar
                     </button>
@@ -983,12 +983,12 @@ export default function Dashboard() {
 
               {/* Settle Bill & Split Payment Section if a Table is Selected */}
               {selectedTable && (
-                <div className="mt-4 p-6 rounded-2xl bg-slate-900/60 border border-white/5 backdrop-blur-md space-y-6">
+                <div className="mt-4 p-6 rounded-2xl bg-slate-50 border border-slate-200 space-y-6">
                   <div>
-                    <h3 className="font-bold text-white flex items-center gap-1.5 text-sm">
-                      <Coins className="h-4.5 w-4.5 text-indigo-400" /> Cuenta y Facturación - Mesa {selectedTable.tableNumber}
+                    <h3 className="font-bold text-slate-900 flex items-center gap-1.5 text-sm">
+                      <Coins className="h-4.5 w-4.5 text-indigo-500" /> Cuenta y Facturación — Mesa {selectedTable.tableNumber}
                     </h3>
-                    <p className="text-[11px] text-slate-400 mt-0.5">Saca la cuenta completa, divídela por clientes o cobra por plato con impuestos españoles calculados.</p>
+                    <p className="text-[11px] text-slate-500 mt-0.5">Saca la cuenta completa, divídela por clientes o cobra por plato con impuestos españoles calculados.</p>
                   </div>
 
                   {(() => {
@@ -1056,7 +1056,7 @@ export default function Dashboard() {
                         
                         {/* Column 1: Order Details */}
                         <div className="space-y-4">
-                          <span className="text-[10px] text-slate-400 uppercase font-bold block">Consumición Actual</span>
+                          <span className="text-[10px] text-slate-500 uppercase font-bold block">Consumición Actual</span>
                           <div className="space-y-2 max-h-[220px] overflow-y-auto pr-1">
                             {allItems.map((item: any) => {
                               const isAlc = isAlcohol(item.itemName);
@@ -1074,33 +1074,33 @@ export default function Dashboard() {
                                   className={`p-2.5 rounded-lg border text-xs flex justify-between items-center transition cursor-pointer ${
                                     billingMode === 'itemized' 
                                       ? isChecked 
-                                        ? 'bg-indigo-600/20 border-indigo-500' 
-                                        : 'bg-slate-950/60 border-white/5 hover:bg-slate-900/60'
-                                      : 'bg-slate-950/40 border-white/5 cursor-default'
+                                        ? 'bg-indigo-50 border-indigo-300' 
+                                        : 'bg-white border-slate-200 hover:bg-slate-50'
+                                      : 'bg-white border-slate-200 cursor-default'
                                   }`}
                                 >
                                   <div>
-                                    <div className="flex items-center gap-1.5 font-bold text-white">
+                                    <div className="flex items-center gap-1.5 font-bold text-slate-800">
                                       {billingMode === 'itemized' && (
                                         <input 
                                           type="checkbox" 
                                           checked={isChecked} 
                                           onChange={() => {}} // handled by div onClick
-                                          className="rounded border-white/10 text-indigo-600 focus:ring-0 mr-1" 
+                                          className="rounded border-slate-300 text-indigo-600 focus:ring-0 mr-1" 
                                         />
                                       )}
                                       <span>{item.itemName}</span>
                                     </div>
-                                    <span className="text-[10px] text-slate-400 mt-0.5 block">
+                                    <span className="text-[10px] text-slate-500 mt-0.5 block">
                                       Cant: {item.quantity} • Unit: {parseFloat(item.price).toFixed(2)}€
                                       {isAlc && (
-                                        <span className="ml-1 bg-amber-500/10 text-amber-400 px-1 rounded text-[8px] font-bold">
+                                        <span className="ml-1 bg-amber-100 text-amber-700 px-1 rounded text-[8px] font-bold">
                                           Alcohol
                                         </span>
                                       )}
                                     </span>
                                   </div>
-                                  <span className="font-mono text-white">{(parseFloat(item.price) * item.quantity).toFixed(2)}€</span>
+                                  <span className="font-mono text-slate-800 font-bold">{(parseFloat(item.price) * item.quantity).toFixed(2)}€</span>
                                 </div>
                               );
                             })}
@@ -1109,7 +1109,7 @@ export default function Dashboard() {
 
                         {/* Column 2: Billing mode and Calculator */}
                         <div className="space-y-4">
-                          <span className="text-[10px] text-slate-400 uppercase font-bold block">Método de Pago</span>
+                          <span className="text-[10px] text-slate-500 uppercase font-bold block">Método de Pago</span>
                           
                           <div className="grid grid-cols-3 gap-2">
                             {(['full', 'equal', 'itemized'] as const).map((mode) => (
@@ -1121,8 +1121,8 @@ export default function Dashboard() {
                                 }}
                                 className={`text-[10px] font-bold py-2 rounded-lg border transition ${
                                   billingMode === mode 
-                                    ? 'bg-indigo-600 border-indigo-500 text-white' 
-                                    : 'bg-slate-950/80 text-slate-400 border-white/5 hover:bg-slate-900'
+                                    ? 'bg-slate-900 border-slate-900 text-white' 
+                                    : 'bg-white text-slate-600 border-slate-200 hover:bg-slate-50'
                                 }`}
                               >
                                 {mode === 'full' ? '100% Caja' : mode === 'equal' ? 'Dividir' : 'Por Cliente'}
@@ -1131,21 +1131,21 @@ export default function Dashboard() {
                           </div>
 
                           {billingMode === 'equal' && (
-                            <div className="p-3 bg-slate-950 rounded-xl space-y-3">
+                            <div className="p-3 bg-white border border-slate-200 rounded-xl space-y-3">
                               <div>
-                                <label className="text-[10px] text-slate-400 block mb-1 font-semibold uppercase">Número de Comensales</label>
+                                <label className="text-[10px] text-slate-500 block mb-1 font-semibold uppercase">Número de Comensales</label>
                                 <input 
                                   type="number"
                                   min="2"
                                   max="30"
                                   value={splitCountInput}
                                   onChange={(e) => setSplitCountInput(e.target.value)}
-                                  className="w-full text-xs bg-slate-900 border border-white/10 text-white rounded px-2 py-1.5 focus:outline-none focus:border-indigo-500"
+                                  className="w-full text-xs bg-slate-50 border border-slate-200 text-slate-800 rounded px-2 py-1.5 focus:outline-none focus:border-indigo-400"
                                 />
                               </div>
-                              <div className="text-center py-2 border-t border-white/5">
-                                <span className="text-xs text-slate-400 block">Toca pagar a cada cliente:</span>
-                                <span className="text-xl font-bold text-indigo-400 block mt-1 font-mono">
+                              <div className="text-center py-2 border-t border-slate-100">
+                                <span className="text-xs text-slate-500 block">Toca pagar a cada cliente:</span>
+                                <span className="text-xl font-bold text-indigo-600 block mt-1 font-mono">
                                   {splitAmount.toFixed(2)} €
                                 </span>
                               </div>
@@ -1153,15 +1153,15 @@ export default function Dashboard() {
                           )}
 
                           {billingMode === 'itemized' && (
-                            <div className="p-3 bg-slate-950 rounded-xl space-y-2.5 text-xs text-slate-300">
+                            <div className="p-3 bg-white border border-slate-200 rounded-xl space-y-2.5 text-xs text-slate-700">
                               <span className="text-[10px] text-slate-500 block leading-normal">
                                 Selecciona los platos del panel de la izquierda que corresponden al cliente que va a pagar ahora.
                               </span>
-                              <div className="flex justify-between border-b border-white/5 pb-1.5 mt-2">
+                              <div className="flex justify-between border-b border-slate-100 pb-1.5 mt-2">
                                 <span>Total Cliente Actual:</span>
-                                <span className="font-mono text-emerald-400 font-bold">{selectedItemsTotal.toFixed(2)} €</span>
+                                <span className="font-mono text-emerald-600 font-bold">{selectedItemsTotal.toFixed(2)} €</span>
                               </div>
-                              <div className="flex justify-between text-slate-400">
+                              <div className="flex justify-between text-slate-500">
                                 <span>Restante en Mesa:</span>
                                 <span className="font-mono">{remainingTotal.toFixed(2)} €</span>
                               </div>
@@ -1169,20 +1169,20 @@ export default function Dashboard() {
                           )}
 
                           {billingMode === 'full' && (
-                            <div className="p-3 bg-slate-950 rounded-xl text-center py-6 text-xs text-slate-400">
+                            <div className="p-3 bg-white border border-slate-200 rounded-xl text-center py-6 text-xs text-slate-500">
                               Se emitirá la factura simplificada por el 100% de la consumición de la mesa.
                             </div>
                           )}
 
-                          <div className="p-3 bg-slate-950 rounded-xl space-y-2">
-                            <label className="text-[10px] text-slate-400 block font-semibold uppercase">Tipo de Servicio (Impuestos)</label>
+                          <div className="p-3 bg-white border border-slate-200 rounded-xl space-y-2">
+                            <label className="text-[10px] text-slate-500 block font-semibold uppercase">Tipo de Servicio (Impuestos)</label>
                             <div className="grid grid-cols-2 gap-2 mt-1">
                               <button
                                 onClick={() => setOrderType('dine_in')}
                                 className={`text-[10px] py-1.5 rounded font-bold border transition ${
                                   orderType === 'dine_in' 
-                                    ? 'bg-slate-800 border-indigo-400 text-white' 
-                                    : 'bg-transparent text-slate-500 border-white/5'
+                                    ? 'bg-slate-900 border-slate-900 text-white' 
+                                    : 'bg-transparent text-slate-500 border-slate-200'
                                 }`}
                               >
                                 Consumo en Mesa (10% IVA)
@@ -1191,8 +1191,8 @@ export default function Dashboard() {
                                 onClick={() => setOrderType('takeaway')}
                                 className={`text-[10px] py-1.5 rounded font-bold border transition ${
                                   orderType === 'takeaway' 
-                                    ? 'bg-slate-800 border-indigo-400 text-white' 
-                                    : 'bg-transparent text-slate-500 border-white/5'
+                                    ? 'bg-slate-900 border-slate-900 text-white' 
+                                    : 'bg-transparent text-slate-500 border-slate-200'
                                 }`}
                               >
                                 Para Llevar (21% IVA Alcohol)
@@ -1205,9 +1205,9 @@ export default function Dashboard() {
                         {/* Column 3: Spanish VAT Breakdown & Submit */}
                         <div className="space-y-4 flex flex-col justify-between">
                           <div className="space-y-3">
-                            <span className="text-[10px] text-slate-400 uppercase font-bold block">Resumen Impositivo (IVA España)</span>
+                            <span className="text-[10px] text-slate-500 uppercase font-bold block">Resumen Impositivo (IVA España)</span>
                             
-                            <div className="p-3 bg-slate-950 rounded-xl space-y-2 text-xs text-slate-400 font-mono">
+                            <div className="p-3 bg-white border border-slate-200 rounded-xl space-y-2 text-xs text-slate-600 font-mono">
                               <div className="flex justify-between">
                                 <span>Base Imponible:</span>
                                 <span>{netSubtotal.toFixed(2)} €</span>
@@ -1222,11 +1222,11 @@ export default function Dashboard() {
                                   <span>{iva21Amount.toFixed(2)} €</span>
                                 </div>
                               )}
-                              <div className="flex justify-between border-t border-white/5 pt-2 text-slate-300">
+                              <div className="flex justify-between border-t border-slate-100 pt-2 text-slate-700">
                                 <span>Suma Impuestos (IVA):</span>
                                 <span>{totalIVA.toFixed(2)} €</span>
                               </div>
-                              <div className="flex justify-between pt-1 font-bold text-sm text-white">
+                              <div className="flex justify-between pt-1 font-bold text-sm text-slate-900">
                                 <span>TOTAL FACTURA:</span>
                                 <span>{totalInclTax.toFixed(2)} €</span>
                               </div>
@@ -1261,18 +1261,18 @@ export default function Dashboard() {
               
               {/* Box 1: Reservations */}
               <section className="glass-panel rounded-2xl p-6 flex flex-col gap-4">
-                <div className="flex justify-between items-center pb-2 border-b border-white/5">
+                <div className="flex justify-between items-center pb-2 border-b border-slate-100">
                   <div className="flex items-center gap-2">
-                    <h2 className="text-sm font-bold text-white flex items-center gap-1.5">
-                      <Calendar className="h-4.5 w-4.5 text-indigo-400" /> Reservas del Día
+                    <h2 className="text-sm font-bold text-slate-900 flex items-center gap-1.5">
+                      <Calendar className="h-4.5 w-4.5 text-indigo-500" /> Reservas del Día
                     </h2>
-                    <span className="text-[10px] bg-indigo-500/10 text-indigo-300 font-bold px-2 py-0.5 rounded-full border border-indigo-500/20">
+                    <span className="text-[10px] bg-indigo-50 text-indigo-700 font-bold px-2 py-0.5 rounded-full border border-indigo-200">
                       {reservationsList.length}
                     </span>
                   </div>
                   <button
                     onClick={() => setShowNewResForm(!showNewResForm)}
-                    className="text-[10px] bg-indigo-600 hover:bg-indigo-500 text-white font-bold py-1 px-2.5 rounded-lg transition"
+                    className="text-[10px] bg-slate-900 hover:bg-slate-700 text-white font-bold py-1 px-2.5 rounded-lg transition"
                   >
                     {showNewResForm ? 'Cerrar Lista' : '+ Nueva Reserva'}
                   </button>
@@ -1286,66 +1286,66 @@ export default function Dashboard() {
                       const totalTables = tablesList.length;
                       const freeTables = tablesList.filter(t => t.joinedWithTableId ? false : t.status === 'free').length;
                       return (
-                        <div className="p-2.5 bg-indigo-500/10 border border-indigo-500/20 text-indigo-300 rounded-lg font-bold text-[10px] flex justify-between items-center">
-                          <span>📊 Rejilla de Disponibilidad:</span>
+                        <div className="p-2.5 bg-indigo-50 border border-indigo-100 text-indigo-700 rounded-lg font-bold text-[10px] flex justify-between items-center">
+                          <span>📊 Disponibilidad:</span>
                           <span>{freeTables} de {totalTables} Mesas Libres</span>
                         </div>
                       );
                     })()}
 
                     <div>
-                      <label className="text-[9px] text-slate-400 block mb-0.5 font-bold uppercase">Nombre del Cliente</label>
+                      <label className="text-[9px] text-slate-500 block mb-0.5 font-bold uppercase">Nombre del Cliente</label>
                       <input 
                         type="text" 
                         required 
                         value={newResName} 
                         onChange={(e) => setNewResName(e.target.value)} 
                         placeholder="Ej. Sofía Martín"
-                        className="w-full bg-slate-950 border border-white/10 text-white rounded p-2 focus:outline-none focus:border-indigo-500"
+                        className="w-full bg-slate-50 border border-slate-200 text-slate-800 rounded p-2 focus:outline-none focus:border-indigo-400"
                       />
                     </div>
 
                     <div className="grid grid-cols-2 gap-2">
                       <div>
-                        <label className="text-[9px] text-slate-400 block mb-0.5 font-bold uppercase">Teléfono</label>
+                        <label className="text-[9px] text-slate-500 block mb-0.5 font-bold uppercase">Teléfono</label>
                         <input 
                           type="text" 
                           value={newResPhone} 
                           onChange={(e) => setNewResPhone(e.target.value)} 
                           placeholder="+34 600..."
-                          className="w-full bg-slate-950 border border-white/10 text-white rounded p-2 focus:outline-none"
+                          className="w-full bg-slate-50 border border-slate-200 text-slate-800 rounded p-2 focus:outline-none"
                         />
                       </div>
                       <div>
-                        <label className="text-[9px] text-slate-400 block mb-0.5 font-bold uppercase">Email (Opcional)</label>
+                        <label className="text-[9px] text-slate-500 block mb-0.5 font-bold uppercase">Email (Opcional)</label>
                         <input 
                           type="email" 
                           value={newResEmail} 
                           onChange={(e) => setNewResEmail(e.target.value)} 
                           placeholder="cliente@email.com"
-                          className="w-full bg-slate-950 border border-white/10 text-white rounded p-2 focus:outline-none"
+                          className="w-full bg-slate-50 border border-slate-200 text-slate-800 rounded p-2 focus:outline-none"
                         />
                       </div>
                     </div>
 
                     <div>
-                      <label className="text-[9px] text-slate-400 block mb-0.5 font-bold uppercase">Alergias o Intolerancias</label>
+                      <label className="text-[9px] text-slate-500 block mb-0.5 font-bold uppercase">Alergias o Intolerancias</label>
                       <input 
                         type="text" 
                         value={newResAllergies} 
                         onChange={(e) => setNewResAllergies(e.target.value)} 
                         placeholder="Gluten, lactosa, etc. (O dejar vacío)"
-                        className="w-full bg-slate-950 border border-white/10 text-white rounded p-2 focus:outline-none"
+                        className="w-full bg-slate-50 border border-slate-200 text-slate-800 rounded p-2 focus:outline-none"
                       />
                     </div>
 
                     <div className="grid grid-cols-2 gap-2">
                       <div>
-                        <label className="text-[9px] text-slate-400 block mb-0.5 font-bold uppercase">Comensales</label>
+                        <label className="text-[9px] text-slate-500 block mb-0.5 font-bold uppercase">Comensales</label>
                         <select 
                           value={newResPartySize} 
                           onChange={(e) => setNewResPartySize(e.target.value)}
-                          className="w-full bg-slate-950 border border-white/10 text-white rounded p-2 focus:outline-none"
+                          className="w-full bg-slate-50 border border-slate-200 text-slate-800 rounded p-2 focus:outline-none"
                         >
                           <option value="1">1 Persona</option>
                           <option value="2">2 Personas</option>
@@ -1356,11 +1356,11 @@ export default function Dashboard() {
                         </select>
                       </div>
                       <div>
-                        <label className="text-[9px] text-slate-400 block mb-0.5 font-bold uppercase font-mono">Mesa Asignada (Libre)</label>
+                        <label className="text-[9px] text-slate-500 block mb-0.5 font-bold uppercase">Mesa Asignada (Libre)</label>
                         <select 
                           value={newResTableId} 
                           onChange={(e) => setNewResTableId(e.target.value)}
-                          className="w-full bg-slate-950 border border-white/10 text-white rounded p-2 focus:outline-none"
+                          className="w-full bg-slate-50 border border-slate-200 text-slate-800 rounded p-2 focus:outline-none"
                         >
                           <option value="">Por asignar / Sin mesa</option>
                           {tablesList.filter(t => t.status === 'free' && !t.joinedWithTableId).map(t => (
@@ -1371,20 +1371,20 @@ export default function Dashboard() {
                     </div>
 
                     <div>
-                      <label className="text-[9px] text-slate-400 block mb-0.5 font-bold uppercase">Fecha y Hora de la Reserva</label>
+                      <label className="text-[9px] text-slate-500 block mb-0.5 font-bold uppercase">Fecha y Hora de la Reserva</label>
                       <input 
                         type="datetime-local" 
                         required 
                         value={newResTime} 
                         onChange={(e) => setNewResTime(e.target.value)} 
-                        className="w-full bg-slate-950 border border-white/10 text-white rounded p-2 focus:outline-none focus:border-indigo-500 font-mono"
+                        className="w-full bg-slate-50 border border-slate-200 text-slate-800 rounded p-2 focus:outline-none focus:border-indigo-400 font-mono"
                       />
                     </div>
 
                     <button 
                       type="submit" 
                       disabled={updating}
-                      className="w-full mt-2 bg-indigo-600 hover:bg-indigo-500 text-white font-bold py-2 rounded transition"
+                      className="w-full mt-2 bg-slate-900 hover:bg-slate-700 text-white font-bold py-2 rounded transition"
                     >
                       {updating ? 'Guardando...' : 'Confirmar Reserva'}
                     </button>
@@ -1398,23 +1398,23 @@ export default function Dashboard() {
                     reservationsList.map((res) => {
                       const resTime = new Date(res.reservationTime).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
                       return (
-                        <div key={res.id} className="p-3 rounded-lg border border-white/5 bg-slate-900/40 flex justify-between items-center">
+                        <div key={res.id} className="p-3 rounded-lg border border-slate-100 bg-white flex justify-between items-center shadow-sm">
                           <div>
-                            <span className="text-sm font-semibold text-white block">{res.customerName}</span>
-                            <span className="text-[10px] text-indigo-300 flex items-center gap-1 mt-0.5">
+                            <span className="text-sm font-semibold text-slate-900 block">{res.customerName}</span>
+                            <span className="text-[10px] text-indigo-600 flex items-center gap-1 mt-0.5">
                               <Clock className="h-3 w-3" /> {resTime} • {res.partySize} personas
                             </span>
                             {res.allergies && (
-                              <span className="block text-[10px] text-rose-400 font-bold mt-1">
+                              <span className="block text-[10px] text-rose-600 font-bold mt-1">
                                 ⚠️ Alergias: {res.allergies}
                               </span>
                             )}
                             {res.tableId ? (
-                              <span className="inline-block text-[9px] uppercase font-bold text-emerald-400 mt-1">
+                              <span className="inline-block text-[9px] uppercase font-bold text-emerald-600 mt-1">
                                 Asignada a Mesa {tablesList.find(t => t.id === res.tableId)?.tableNumber || '?' }
                               </span>
                             ) : (
-                              <span className="inline-block text-[9px] uppercase font-bold text-amber-400 mt-1">
+                              <span className="inline-block text-[9px] uppercase font-bold text-amber-600 mt-1">
                                 Sin Asignar
                               </span>
                             )}
@@ -1423,7 +1423,7 @@ export default function Dashboard() {
                           {!res.tableId && (
                             <button
                               onClick={() => setAssigningReservation(res)}
-                              className="text-[10px] bg-indigo-600 hover:bg-indigo-500 text-white font-bold py-1 px-2.5 rounded-lg transition"
+                              className="text-[10px] bg-slate-900 hover:bg-slate-700 text-white font-bold py-1 px-2.5 rounded-lg transition"
                             >
                               Asignar
                             </button>
@@ -1436,15 +1436,15 @@ export default function Dashboard() {
 
                 {/* Assignment Dropdown Modal */}
                 {assigningReservation && (
-                  <div className="p-3 rounded-lg border border-indigo-500/30 bg-indigo-950/30 flex flex-col gap-2">
-                    <span className="text-xs font-semibold text-white">Asignar mesa para {assigningReservation.customerName}:</span>
+                  <div className="p-3 rounded-lg border border-indigo-200 bg-indigo-50 flex flex-col gap-2">
+                    <span className="text-xs font-semibold text-indigo-800">Asignar mesa para {assigningReservation.customerName}:</span>
                     <div className="flex gap-2">
                       <select 
                         onChange={(e) => {
                           const val = e.target.value;
                           if (val) handleAssignTableToReservation(assigningReservation.id, val);
                         }}
-                        className="text-xs bg-slate-950 border border-white/10 text-slate-300 rounded px-2 py-1 w-full"
+                        className="text-xs bg-white border border-slate-200 text-slate-700 rounded px-2 py-1 w-full"
                         defaultValue=""
                       >
                         <option value="" disabled>Selecciona Mesa...</option>
@@ -1454,7 +1454,7 @@ export default function Dashboard() {
                       </select>
                       <button 
                         onClick={() => setAssigningReservation(null)}
-                        className="text-xs bg-slate-800 text-slate-400 rounded px-2 py-1"
+                        className="text-xs bg-white border border-slate-200 text-slate-500 rounded px-2 py-1"
                       >
                         Cerrar
                       </button>
@@ -1467,24 +1467,24 @@ export default function Dashboard() {
 
               {/* Box 2: Activity Logs */}
               <section className="glass-panel rounded-2xl p-6 flex flex-col gap-4 max-h-[380px]">
-                <div className="flex justify-between items-center pb-2 border-b border-white/5">
-                  <h2 className="text-md font-bold text-white flex items-center gap-1.5">
-                    <History className="h-4.5 w-4.5 text-indigo-400" /> Log de Auditoría RLS
+                <div className="flex justify-between items-center pb-2 border-b border-slate-100">
+                  <h2 className="text-md font-bold text-slate-900 flex items-center gap-1.5">
+                    <History className="h-4.5 w-4.5 text-indigo-500" /> Log de Actividad
                   </h2>
-                  <span className="text-[9px] uppercase bg-emerald-500/20 text-emerald-300 font-bold px-2 py-0.5 rounded-full">En tiempo real</span>
+                  <span className="text-[9px] uppercase bg-emerald-50 text-emerald-700 border border-emerald-200 font-bold px-2 py-0.5 rounded-full">En tiempo real</span>
                 </div>
 
                 <div className="overflow-y-auto space-y-3 pr-1 flex-1">
                   {logsList.length === 0 ? (
-                    <p className="text-xs text-slate-500 text-center py-6">No hay registros de actividad aún.</p>
+                    <p className="text-xs text-slate-400 text-center py-6">No hay registros de actividad aún.</p>
                   ) : (
                     logsList.map((log) => {
                       const logTime = new Date(log.timestamp).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit', second: '2-digit' });
                       return (
-                        <div key={log.id} className="text-xs border-b border-white/5 pb-2 last:border-b-0">
-                          <p className="text-slate-300 leading-snug">{log.actionDescription}</p>
-                          <div className="flex justify-between text-[10px] text-slate-500 mt-1">
-                            <span className="font-semibold text-slate-400">{log.userName || 'Sistema'} ({log.userRole || 'Admin'})</span>
+                        <div key={log.id} className="text-xs border-b border-slate-100 pb-2 last:border-b-0">
+                          <p className="text-slate-700 leading-snug">{log.actionDescription}</p>
+                          <div className="flex justify-between text-[10px] text-slate-400 mt-1">
+                            <span className="font-semibold text-slate-500">{log.userName || 'Sistema'} ({log.userRole || 'Admin'})</span>
                             <span>{logTime}</span>
                           </div>
                         </div>
@@ -1505,17 +1505,17 @@ export default function Dashboard() {
             {!isTierEnough('medium') ? (
               
               /* Lock Screen (Basic user blocking) */
-              <div className="glass-panel rounded-2xl p-12 text-center flex flex-col items-center justify-center min-h-[400px] border border-amber-500/10">
-                <div className="bg-amber-500/10 border border-amber-500/20 p-4 rounded-full text-amber-400 mb-6">
+              <div className="glass-panel rounded-2xl p-12 text-center flex flex-col items-center justify-center min-h-[400px] border border-amber-100">
+                <div className="bg-amber-50 border border-amber-200 p-4 rounded-full text-amber-500 mb-6">
                   <Lock className="h-10 w-10" />
                 </div>
-                <h2 className="text-2xl font-bold text-white mb-2">Módulo: Fidelización y Marketing Bloqueado</h2>
-                <p className="text-slate-400 max-w-lg mb-8 text-sm">
-                  Esta funcionalidad requiere un plan de suscripción <span className="font-bold text-amber-300">Growth (Medium)</span>. Tu plan actual es <span className="font-bold text-slate-300 uppercase">{user.subscriptionTier}</span>.
+                <h2 className="text-2xl font-bold text-slate-900 mb-2">Módulo: Fidelización y Marketing</h2>
+                <p className="text-slate-500 max-w-lg mb-8 text-sm">
+                  Esta funcionalidad requiere un plan de suscripción <span className="font-bold text-amber-600">Growth (Medium)</span>. Tu plan actual es <span className="font-bold text-slate-700 uppercase">{user.subscriptionTier}</span>.
                 </p>
                 <button 
                   onClick={() => alert('Simular Upgrades de Suscripción no implementados en este demo.')}
-                  className="bg-indigo-600 text-white font-bold py-2 px-6 rounded-xl hover:bg-indigo-500 transition shadow-lg shadow-indigo-600/30 text-sm"
+                  className="bg-slate-900 text-white font-bold py-2 px-6 rounded-xl hover:bg-slate-700 transition text-sm"
                 >
                   Solicitar Upgrade de Plan
                 </button>
@@ -1528,10 +1528,10 @@ export default function Dashboard() {
                 
                 {/* Header */}
                 <div className="glass-panel rounded-2xl p-6">
-                  <h2 className="text-xl font-bold text-white flex items-center gap-2">
-                    <UserCheck className="h-6 w-6 text-emerald-400" /> Panel de Fidelización y Automatización de Marketing
+                  <h2 className="text-xl font-bold text-slate-900 flex items-center gap-2">
+                    <UserCheck className="h-6 w-6 text-emerald-500" /> Panel de Fidelización y Marketing
                   </h2>
-                  <p className="text-xs text-slate-400 mt-1">Herramientas Growth para fidelización de clientes (Inquilino: {user.tenantName}).</p>
+                  <p className="text-xs text-slate-500 mt-1">Herramientas Growth para fidelización de clientes (Inquilino: {user.tenantName}).</p>
                 </div>
 
                 <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
@@ -1541,59 +1541,59 @@ export default function Dashboard() {
                     
                     {/* Add Customer Form */}
                     <div className="glass-panel rounded-2xl p-6 space-y-4">
-                      <h3 className="text-sm font-bold text-white flex items-center gap-1.5">
-                        <Plus className="h-4 w-4 text-emerald-400" /> Registrar Cliente de Fidelidad
+                      <h3 className="text-sm font-bold text-slate-900 flex items-center gap-1.5">
+                        <Plus className="h-4 w-4 text-emerald-500" /> Registrar Cliente de Fidelidad
                       </h3>
                       <form onSubmit={handleAddLoyaltyCustomer} className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                         <div>
-                          <label className="text-[10px] text-slate-400 block mb-1 font-semibold uppercase">Nombre Completo</label>
+                          <label className="text-[10px] text-slate-500 block mb-1 font-semibold uppercase">Nombre Completo</label>
                           <input 
                             type="text"
                             required
                             placeholder="Ej. Juan Pérez"
                             value={newCustName}
                             onChange={(e) => setNewCustName(e.target.value)}
-                            className="w-full text-xs bg-slate-950/80 border border-white/10 text-white rounded-lg p-2.5 focus:outline-none focus:border-indigo-500"
+                            className="w-full text-xs bg-slate-50 border border-slate-200 text-slate-800 rounded-lg p-2.5 focus:outline-none focus:border-indigo-400"
                           />
                         </div>
                         <div>
-                          <label className="text-[10px] text-slate-400 block mb-1 font-semibold uppercase">Correo Electrónico</label>
+                          <label className="text-[10px] text-slate-500 block mb-1 font-semibold uppercase">Correo Electrónico</label>
                           <input 
                             type="email"
                             required
                             placeholder="juan@gmail.com"
                             value={newCustEmail}
                             onChange={(e) => setNewCustEmail(e.target.value)}
-                            className="w-full text-xs bg-slate-950/80 border border-white/10 text-white rounded-lg p-2.5 focus:outline-none focus:border-indigo-500"
+                            className="w-full text-xs bg-slate-50 border border-slate-200 text-slate-800 rounded-lg p-2.5 focus:outline-none focus:border-indigo-400"
                           />
                         </div>
                         <div>
-                          <label className="text-[10px] text-slate-400 block mb-1 font-semibold uppercase">Teléfono (Opcional)</label>
+                          <label className="text-[10px] text-slate-500 block mb-1 font-semibold uppercase">Teléfono (Opcional)</label>
                           <input 
                             type="text"
                             placeholder="+34600111222"
                             value={newCustPhone}
                             onChange={(e) => setNewCustPhone(e.target.value)}
-                            className="w-full text-xs bg-slate-950/80 border border-white/10 text-white rounded-lg p-2.5 focus:outline-none focus:border-indigo-500"
+                            className="w-full text-xs bg-slate-50 border border-slate-200 text-slate-800 rounded-lg p-2.5 focus:outline-none focus:border-indigo-400"
                           />
                         </div>
                         <div>
-                          <label className="text-[10px] text-slate-400 block mb-1 font-semibold uppercase">Alergias (Opcional)</label>
+                          <label className="text-[10px] text-slate-500 block mb-1 font-semibold uppercase">Alergias (Opcional)</label>
                           <input 
                             type="text"
                             placeholder="Gluten, Marisco, etc."
                             value={newCustAllergies}
                             onChange={(e) => setNewCustAllergies(e.target.value)}
-                            className="w-full text-xs bg-slate-950/80 border border-white/10 text-white rounded-lg p-2.5 focus:outline-none focus:border-indigo-500"
+                            className="w-full text-xs bg-slate-50 border border-slate-200 text-slate-800 rounded-lg p-2.5 focus:outline-none focus:border-indigo-400"
                           />
                         </div>
                         <div className="sm:col-span-2">
-                          <label className="text-[10px] text-slate-400 block mb-1 font-semibold uppercase">Preferencias o Notas</label>
+                          <label className="text-[10px] text-slate-500 block mb-1 font-semibold uppercase">Preferencias o Notas</label>
                           <textarea 
                             placeholder="Prefiere mesa exterior, vino tinto, etc."
                             value={newCustPref}
                             onChange={(e) => setNewCustPref(e.target.value)}
-                            className="w-full text-xs bg-slate-950/80 border border-white/10 text-white rounded-lg p-2.5 h-16 resize-none focus:outline-none focus:border-indigo-500"
+                            className="w-full text-xs bg-slate-50 border border-slate-200 text-slate-800 rounded-lg p-2.5 h-16 resize-none focus:outline-none focus:border-indigo-400"
                           />
                         </div>
                         <div className="sm:col-span-2 flex justify-end">
@@ -1610,13 +1610,13 @@ export default function Dashboard() {
 
                     {/* Customer Directory Table */}
                     <div className="glass-panel rounded-2xl p-6 space-y-4">
-                      <h3 className="text-sm font-bold text-white flex items-center gap-1.5">
-                        <Star className="h-4 w-4 text-emerald-400" /> Directorio de Clientes Fidelizados
+                      <h3 className="text-sm font-bold text-slate-900 flex items-center gap-1.5">
+                        <Star className="h-4 w-4 text-emerald-500" /> Directorio de Clientes Fidelizados
                       </h3>
                       <div className="overflow-x-auto">
                         <table className="w-full text-left text-xs border-collapse">
                           <thead>
-                            <tr className="border-b border-white/10 text-slate-400 uppercase text-[10px]">
+                            <tr className="border-b border-slate-200 text-slate-500 uppercase text-[10px]">
                               <th className="py-2.5 font-semibold">Cliente</th>
                               <th className="py-2.5 font-semibold">Contacto</th>
                               <th className="py-2.5 font-semibold">Puntos</th>
@@ -1626,24 +1626,24 @@ export default function Dashboard() {
                           <tbody>
                             {loyaltyCustomers.length === 0 ? (
                               <tr>
-                                <td colSpan={4} className="py-6 text-center text-slate-500">No hay clientes fidelizados registrados aún.</td>
+                                <td colSpan={4} className="py-6 text-center text-slate-400">No hay clientes fidelizados registrados aún.</td>
                               </tr>
                             ) : (
                               loyaltyCustomers.map((cust: any) => (
-                                <tr key={cust.id} className="border-b border-white/5 last:border-b-0 hover:bg-white/5 transition">
-                                  <td className="py-3 font-semibold text-white">{cust.name}</td>
-                                  <td className="py-3 text-slate-300">
+                                <tr key={cust.id} className="border-b border-slate-100 last:border-b-0 hover:bg-slate-50 transition">
+                                  <td className="py-3 font-semibold text-slate-900">{cust.name}</td>
+                                  <td className="py-3 text-slate-600">
                                     <span className="block">{cust.email}</span>
-                                    <span className="text-[10px] text-slate-500">{cust.phone || 'Sin teléfono'}</span>
+                                    <span className="text-[10px] text-slate-400">{cust.phone || 'Sin teléfono'}</span>
                                   </td>
                                   <td className="py-3">
-                                    <span className="font-mono bg-indigo-500/20 text-indigo-300 px-2 py-0.5 rounded font-bold">
+                                    <span className="font-mono bg-indigo-50 text-indigo-700 border border-indigo-100 px-2 py-0.5 rounded font-bold">
                                       {cust.points} pts
                                     </span>
                                   </td>
-                                  <td className="py-3 text-slate-300">
+                                  <td className="py-3 text-slate-600">
                                     {cust.allergies && (
-                                      <span className="inline-block bg-red-500/20 text-red-300 px-1.5 py-0.5 rounded text-[10px] font-bold mr-1.5">
+                                      <span className="inline-block bg-red-50 text-red-600 border border-red-100 px-1.5 py-0.5 rounded text-[10px] font-bold mr-1.5">
                                         ⚠️ {cust.allergies}
                                       </span>
                                     )}
@@ -1664,22 +1664,22 @@ export default function Dashboard() {
                     
                     {/* Public Reservations Widget snippet */}
                     <div className="glass-panel rounded-2xl p-6 space-y-3">
-                      <h3 className="text-sm font-bold text-white flex items-center gap-1.5">
-                        <MessageSquare className="h-4 w-4 text-emerald-400" /> Widget Reservas Públicas
+                      <h3 className="text-sm font-bold text-slate-900 flex items-center gap-1.5">
+                        <MessageSquare className="h-4 w-4 text-emerald-500" /> Widget Reservas Públicas
                       </h3>
-                      <p className="text-xs text-slate-400 leading-relaxed">
+                      <p className="text-xs text-slate-500 leading-relaxed">
                         Inserta este widget en la web corporativa de tu restaurante para que los comensales reserven online:
                       </p>
-                      <pre className="p-3 bg-slate-950/80 rounded-lg text-[10px] font-mono text-slate-400 overflow-x-auto border border-white/5">
+                      <pre className="p-3 bg-slate-50 border border-slate-200 rounded-lg text-[10px] font-mono text-slate-600 overflow-x-auto">
                         {`<iframe src="${apiUrl}/public-widget?tenantId=${user.tenantId}"></iframe>`}
                       </pre>
                       <div className="flex justify-between items-center text-[10px]">
-                        <span className="bg-emerald-500/10 text-emerald-300 px-2 py-0.5 rounded font-bold">Aislamiento RLS Protegido</span>
+                        <span className="bg-emerald-50 text-emerald-700 border border-emerald-100 px-2 py-0.5 rounded font-bold">Aislamiento RLS Protegido</span>
                         <a 
                           href={`${apiUrl}/public-widget?tenantId=${user.tenantId}`} 
                           target="_blank" 
                           rel="noreferrer"
-                          className="text-indigo-400 hover:text-indigo-300 font-semibold"
+                          className="text-indigo-600 hover:text-indigo-500 font-semibold"
                         >
                           Ver Preview Widget ↗
                         </a>
@@ -1688,22 +1688,22 @@ export default function Dashboard() {
 
                     {/* Marketing Automation triggers */}
                     <div className="glass-panel rounded-2xl p-6 space-y-4">
-                      <h3 className="text-sm font-bold text-white flex items-center gap-1.5">
-                        <Clock className="h-4 w-4 text-emerald-400" /> Triggers de Automatización
+                      <h3 className="text-sm font-bold text-slate-900 flex items-center gap-1.5">
+                        <Clock className="h-4 w-4 text-emerald-500" /> Triggers de Automatización
                       </h3>
                       
-                      <div className="p-3 bg-slate-900/40 border border-white/5 rounded-xl space-y-3 text-xs">
+                      <div className="p-3 bg-slate-50 border border-slate-200 rounded-xl space-y-3 text-xs">
                         <div className="flex justify-between items-center">
-                          <span className="font-semibold text-slate-300">Campaña de Reactivación</span>
-                          <span className="bg-emerald-500/20 text-emerald-400 px-1.5 py-0.5 rounded text-[9px] font-bold">Activo</span>
+                          <span className="font-semibold text-slate-800">Campaña de Reactivación</span>
+                          <span className="bg-emerald-50 text-emerald-700 border border-emerald-100 px-1.5 py-0.5 rounded text-[9px] font-bold">Activo</span>
                         </div>
-                        <p className="text-[11px] text-slate-400 leading-normal">
+                        <p className="text-[11px] text-slate-500 leading-normal">
                           Filtra a los clientes fidelizados con más de 50 puntos y les envía de forma automática un cupón personalizado de reactivación.
                         </p>
                         <button 
                           onClick={handleRunCampaignSimulation}
                           disabled={isCampaignSimulating}
-                          className="w-full bg-indigo-600 hover:bg-indigo-500 text-white text-xs font-bold py-2 rounded-lg transition disabled:opacity-50 flex items-center justify-center gap-1.5"
+                          className="w-full bg-slate-900 hover:bg-slate-700 text-white text-xs font-bold py-2 rounded-lg transition disabled:opacity-50 flex items-center justify-center gap-1.5"
                         >
                           {isCampaignSimulating ? 'Simulando...' : 'Ejecutar Simulación de Trigger'}
                         </button>
@@ -1712,10 +1712,10 @@ export default function Dashboard() {
                       {/* Simulation Logs */}
                       {campaignLogs.length > 0 && (
                         <div className="space-y-2">
-                          <h4 className="text-[10px] text-slate-400 uppercase font-bold">Logs de Envío de Campaña:</h4>
-                          <div className="p-2.5 bg-slate-950 rounded-lg max-h-[140px] overflow-y-auto space-y-2 border border-white/5">
+                          <h4 className="text-[10px] text-slate-500 uppercase font-bold">Logs de Envío de Campaña:</h4>
+                          <div className="p-2.5 bg-slate-50 border border-slate-200 rounded-lg max-h-[140px] overflow-y-auto space-y-2">
                             {campaignLogs.map((log: any, idx: number) => (
-                              <div key={idx} className="text-[11px] font-mono text-indigo-300 leading-snug">
+                              <div key={idx} className="text-[11px] font-mono text-indigo-700 leading-snug">
                                 {log.msg}
                               </div>
                             ))}
@@ -1741,17 +1741,17 @@ export default function Dashboard() {
             {!isTierEnough('premium') ? (
               
               /* Lock Screen (Basic / Medium user blocking) */
-              <div className="glass-panel rounded-2xl p-12 text-center flex flex-col items-center justify-center min-h-[400px] border border-purple-500/10">
-                <div className="bg-purple-500/10 border border-purple-500/20 p-4 rounded-full text-purple-400 mb-6">
+              <div className="glass-panel rounded-2xl p-12 text-center flex flex-col items-center justify-center min-h-[400px] border border-purple-100">
+                <div className="bg-purple-50 border border-purple-200 p-4 rounded-full text-purple-500 mb-6">
                   <Lock className="h-10 w-10" />
                 </div>
-                <h2 className="text-2xl font-bold text-white mb-2">Módulo: BI predictivo e Informes P&L Bloqueado</h2>
-                <p className="text-slate-400 max-w-lg mb-8 text-sm">
-                  Esta funcionalidad requiere un plan de suscripción <span className="font-bold text-purple-300">Enterprise BI & Finance (Premium)</span>. Tu plan actual es <span className="font-bold text-slate-300 uppercase">{user.subscriptionTier}</span>.
+                <h2 className="text-2xl font-bold text-slate-900 mb-2">Módulo: BI e Informes Financieros</h2>
+                <p className="text-slate-500 max-w-lg mb-8 text-sm">
+                  Esta funcionalidad requiere un plan de suscripción <span className="font-bold text-purple-600">Enterprise BI & Finance (Premium)</span>. Tu plan actual es <span className="font-bold text-slate-700 uppercase">{user.subscriptionTier}</span>.
                 </p>
                 <button 
                   onClick={() => alert('Simular Upgrades de Suscripción no implementados en este demo.')}
-                  className="bg-indigo-600 text-white font-bold py-2 px-6 rounded-xl hover:bg-indigo-500 transition shadow-lg shadow-indigo-600/30 text-sm"
+                  className="bg-slate-900 text-white font-bold py-2 px-6 rounded-xl hover:bg-slate-700 transition text-sm"
                 >
                   Solicitar Upgrade a Premium
                 </button>
@@ -1763,29 +1763,29 @@ export default function Dashboard() {
               <div className="space-y-6">
                 
                 {/* Date range filters */}
-                <div className="flex flex-wrap gap-4 items-center bg-white/5 p-4 rounded-2xl border border-white/5">
+                <div className="flex flex-wrap gap-4 items-center bg-white border border-slate-200 p-4 rounded-2xl">
                   <div className="flex flex-col">
-                    <label className="text-[10px] text-slate-400 font-bold uppercase mb-1">Fecha Inicio</label>
+                    <label className="text-[10px] text-slate-500 font-bold uppercase mb-1">Fecha Inicio</label>
                     <input 
                       type="date" 
                       value={accountingStartDate} 
                       onChange={(e) => setAccountingStartDate(e.target.value)} 
-                      className="bg-slate-950 border border-white/10 text-white text-xs rounded-lg p-2.5 focus:outline-none focus:border-indigo-500 font-mono"
+                      className="bg-slate-50 border border-slate-200 text-slate-800 text-xs rounded-lg p-2.5 focus:outline-none focus:border-indigo-400 font-mono"
                     />
                   </div>
                   <div className="flex flex-col">
-                    <label className="text-[10px] text-slate-400 font-bold uppercase mb-1">Fecha Fin</label>
+                    <label className="text-[10px] text-slate-500 font-bold uppercase mb-1">Fecha Fin</label>
                     <input 
                       type="date" 
                       value={accountingEndDate} 
                       onChange={(e) => setAccountingEndDate(e.target.value)} 
-                      className="bg-slate-950 border border-white/10 text-white text-xs rounded-lg p-2.5 focus:outline-none focus:border-indigo-500 font-mono"
+                      className="bg-slate-50 border border-slate-200 text-slate-800 text-xs rounded-lg p-2.5 focus:outline-none focus:border-indigo-400 font-mono"
                     />
                   </div>
                   <div className="mt-5 flex gap-2">
                     <button 
                       onClick={() => fetchData()}
-                      className="bg-indigo-600 hover:bg-indigo-500 text-white text-xs font-bold py-2.5 px-5 rounded-lg transition"
+                      className="bg-slate-900 hover:bg-slate-700 text-white text-xs font-bold py-2.5 px-5 rounded-lg transition"
                     >
                       Filtrar Fechas
                     </button>
@@ -1795,7 +1795,7 @@ export default function Dashboard() {
                         setAccountingStartDate(todayStr);
                         setAccountingEndDate(todayStr);
                       }}
-                      className="bg-slate-800 hover:bg-slate-700 text-slate-300 text-xs font-bold py-2.5 px-4 rounded-lg transition"
+                      className="bg-white hover:bg-slate-100 text-slate-700 border border-slate-200 text-xs font-bold py-2.5 px-4 rounded-lg transition"
                     >
                       Hoy
                     </button>
@@ -1817,30 +1817,30 @@ export default function Dashboard() {
                   
                   return (
                     <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 gap-6">
-                      <div className="glass-panel rounded-xl p-5 border-l-4 border-emerald-400">
-                        <span className="text-xs font-semibold text-slate-400 uppercase block">Ventas (Caja)</span>
-                        <span className="text-2xl font-bold text-white block mt-1 font-mono">
+                      <div className="glass-panel rounded-xl p-5 border-l-4 border-emerald-500">
+                        <span className="text-xs font-semibold text-slate-500 uppercase block">Ventas (Caja)</span>
+                        <span className="text-2xl font-bold text-slate-900 block mt-1 font-mono">
                           {rangeSalesTotal.toFixed(2)} €
                         </span>
                         <span className="text-[10px] text-slate-400 mt-1 block">Pedidos pagados en el rango</span>
                       </div>
-                      <div className="glass-panel rounded-xl p-5 border-l-4 border-rose-400">
-                        <span className="text-xs font-semibold text-slate-400 uppercase block">Gastos de Caja</span>
-                        <span className="text-2xl font-bold text-white block mt-1 font-mono">
+                      <div className="glass-panel rounded-xl p-5 border-l-4 border-rose-500">
+                        <span className="text-xs font-semibold text-slate-500 uppercase block">Gastos de Caja</span>
+                        <span className="text-2xl font-bold text-slate-900 block mt-1 font-mono">
                           {rangeExpensesTotal.toFixed(2)} €
                         </span>
                         <span className="text-[10px] text-slate-400 mt-1 block">Salidas registradas</span>
                       </div>
-                      <div className="glass-panel rounded-xl p-5 border-l-4 border-indigo-400">
-                        <span className="text-xs font-semibold text-slate-400 uppercase block">Saldo Esperado</span>
-                        <span className="text-2xl font-bold text-white block mt-1 font-mono">
+                      <div className="glass-panel rounded-xl p-5 border-l-4 border-indigo-500">
+                        <span className="text-xs font-semibold text-slate-500 uppercase block">Saldo Esperado</span>
+                        <span className="text-2xl font-bold text-slate-900 block mt-1 font-mono">
                           {expectedDrawerTotal.toFixed(2)} €
                         </span>
                         <span className="text-[10px] text-slate-400 mt-1 block">Ventas - Gastos en rango</span>
                       </div>
-                      <div className="glass-panel rounded-xl p-5 border-l-4 border-amber-400">
-                        <span className="text-xs font-semibold text-slate-400 uppercase block">Último Descuadre</span>
-                        <span className={`text-2xl font-bold block mt-1 ${closingsList[0] && parseFloat(closingsList[0].discrepancy) !== 0 ? 'text-rose-400' : 'text-emerald-400'}`}>
+                      <div className="glass-panel rounded-xl p-5 border-l-4 border-amber-500">
+                        <span className="text-xs font-semibold text-slate-500 uppercase block">Último Descuadre</span>
+                        <span className={`text-2xl font-bold block mt-1 ${closingsList[0] && parseFloat(closingsList[0].discrepancy) !== 0 ? 'text-rose-600' : 'text-emerald-600'}`}>
                           {closingsList[0] ? `${parseFloat(closingsList[0].discrepancy).toFixed(2)} €` : '0.00 €'}
                         </span>
                         <span className="text-[10px] text-slate-400 mt-1 block">Último arqueo de caja</span>
@@ -1856,41 +1856,41 @@ export default function Dashboard() {
                     
                     {/* P&L Statement */}
                     <div className="glass-panel rounded-2xl p-6 space-y-4">
-                      <h3 className="font-bold text-white flex items-center gap-1.5 text-sm">
-                        <TrendingUp className="h-5 w-5 text-indigo-400" /> Cuenta P&L Simplificada (Pérdidas y Ganancias del Mes)
+                      <h3 className="font-bold text-slate-900 flex items-center gap-1.5 text-sm">
+                        <TrendingUp className="h-5 w-5 text-indigo-500" /> Cuenta P&L Simplificada (Pérdidas y Ganancias del Mes)
                       </h3>
-                      <div className="space-y-2.5 text-xs text-slate-300">
-                        <div className="flex justify-between pb-1.5 border-b border-white/5 text-slate-400 font-semibold">
+                      <div className="space-y-2.5 text-xs text-slate-700">
+                        <div className="flex justify-between pb-1.5 border-b border-slate-200 text-slate-500 font-semibold">
                           <span>Línea de Negocio</span>
                           <span>Monto</span>
                         </div>
                         <div className="flex justify-between">
                           <span>Ingresos Totales (Mesa + Takeaway)</span>
-                          <span className="font-mono text-emerald-400">
+                          <span className="font-mono text-emerald-600">
                             +{pnlData ? parseFloat(pnlData.totalRevenue).toLocaleString('es-ES', { minimumFractionDigits: 2 }) : '24.500,00'} €
                           </span>
                         </div>
                         <div className="flex justify-between">
                           <span>Costes de Alimento (COGS - Food Cost)</span>
-                          <span className="font-mono text-red-400">
+                          <span className="font-mono text-rose-600">
                             -{pnlData ? parseFloat(pnlData.foodCost).toLocaleString('es-ES', { minimumFractionDigits: 2 }) : '6.125,00'} €
                           </span>
                         </div>
                         <div className="flex justify-between">
                           <span>Gastos de Personal (Nóminas + SS)</span>
-                          <span className="font-mono text-red-400">
+                          <span className="font-mono text-rose-600">
                             -{pnlData ? parseFloat(pnlData.laborCost).toLocaleString('es-ES', { minimumFractionDigits: 2 }) : '9.800,00'} €
                           </span>
                         </div>
                         <div className="flex justify-between">
                           <span>Gastos Operativos (Alquiler, Suministros, Software)</span>
-                          <span className="font-mono text-red-400">
+                          <span className="font-mono text-rose-600">
                             -{pnlData ? parseFloat(pnlData.otherExpenses).toLocaleString('es-ES', { minimumFractionDigits: 2 }) : '3.200,00'} €
                           </span>
                         </div>
-                        <div className="flex justify-between pt-2 border-t border-white/10 font-bold text-sm text-white">
+                        <div className="flex justify-between pt-2 border-t border-slate-200 font-bold text-sm text-slate-900">
                           <span>Resultado Neto Operativo (Profit)</span>
-                          <span className="font-mono text-emerald-400">
+                          <span className="font-mono text-emerald-600">
                             +{pnlData ? parseFloat(pnlData.netProfit).toLocaleString('es-ES', { minimumFractionDigits: 2 }) : '5.375,00'} €
                           </span>
                         </div>
@@ -1899,20 +1899,20 @@ export default function Dashboard() {
 
                     {/* Escandallos list */}
                     <div className="glass-panel rounded-2xl p-6 space-y-4">
-                      <h3 className="font-bold text-white flex items-center gap-1.5 text-sm">
-                        <Coins className="h-5 w-5 text-indigo-400" /> Fichas de Escandallo (Costes e Ingredientes)
+                      <h3 className="font-bold text-slate-900 flex items-center gap-1.5 text-sm">
+                        <Coins className="h-5 w-5 text-indigo-500" /> Fichas de Escandallo (Costes e Ingredientes)
                       </h3>
                       <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
                         {escandallosList.map((item: any, idx: number) => (
-                          <div key={idx} className="p-4 rounded-xl bg-slate-900/60 border border-white/5 flex flex-col justify-between gap-3">
+                          <div key={idx} className="p-4 rounded-xl bg-slate-50 border border-slate-200 flex flex-col justify-between gap-3">
                             <div>
-                              <span className="font-bold text-white block text-xs">{item.recipeName}</span>
-                              <span className="text-[10px] text-slate-400 mt-1 block">Coste Proveedor: {item.supplierCost.toFixed(2)}€</span>
-                              <span className="text-[10px] text-slate-400 block">PVP Carta: {item.menuPrice.toFixed(2)}€</span>
+                              <span className="font-bold text-slate-900 block text-xs">{item.recipeName}</span>
+                              <span className="text-[10px] text-slate-500 mt-1 block">Coste Proveedor: {item.supplierCost.toFixed(2)}€</span>
+                              <span className="text-[10px] text-slate-500 block">PVP Carta: {item.menuPrice.toFixed(2)}€</span>
                             </div>
-                            <div className="flex justify-between items-center pt-2 border-t border-white/5">
-                              <span className="text-[9px] uppercase font-bold text-slate-500">Margen Bruto</span>
-                              <span className="font-mono bg-emerald-500/10 text-emerald-400 px-2 py-0.5 rounded text-[10px] font-bold">
+                            <div className="flex justify-between items-center pt-2 border-t border-slate-200">
+                              <span className="text-[9px] uppercase font-bold text-slate-400">Margen Bruto</span>
+                              <span className="font-mono bg-emerald-50 text-emerald-700 border border-emerald-100 px-2 py-0.5 rounded text-[10px] font-bold">
                                 {item.marginPercent}%
                               </span>
                             </div>
@@ -1923,20 +1923,20 @@ export default function Dashboard() {
 
                   </div>
 
-                  {/* Right Column: Blind Register Closings Form & History */}
+                  {/* Right Column: Arqueo de Caja + Gastos */}
                   <div className="space-y-6">
-                    
+
                     {/* Arqueo Form */}
                     <div className="glass-panel rounded-2xl p-6 space-y-4">
-                      <h3 className="text-sm font-bold text-white flex items-center gap-1.5">
-                        <Coins className="h-4 w-4 text-purple-400" /> Arqueo de Caja Ciego
+                      <h3 className="text-sm font-bold text-slate-900 flex items-center gap-1.5">
+                        <Coins className="h-4 w-4 text-indigo-500" /> Arqueo de Caja Ciego
                       </h3>
-                      <p className="text-xs text-slate-400 leading-normal">
+                      <p className="text-xs text-slate-500 leading-normal">
                         Introduce el total de efectivo contado físicamente en caja. El sistema calculará el descuadre comparándolo automáticamente con las ventas del día registradas vía RLS.
                       </p>
                       <form onSubmit={handleRegisterClosingSubmit} className="space-y-3">
                         <div>
-                          <label className="text-[10px] text-slate-400 block mb-1 font-semibold uppercase">Efectivo Físico Contado (€)</label>
+                          <label className="text-[10px] text-slate-500 block mb-1 font-semibold uppercase">Efectivo Físico Contado (€)</label>
                           <div className="relative">
                             <input 
                               type="number"
@@ -1945,32 +1945,32 @@ export default function Dashboard() {
                               placeholder="Ej. 1450.25"
                               value={actualAmountInput}
                               onChange={(e) => setActualAmountInput(e.target.value)}
-                              className="w-full text-xs bg-slate-950/80 border border-white/10 text-white rounded-lg p-2.5 pr-8 focus:outline-none focus:border-purple-500"
+                              className="w-full text-xs bg-slate-50 border border-slate-200 text-slate-800 rounded-lg p-2.5 pr-8 focus:outline-none focus:border-indigo-400"
                             />
-                            <span className="absolute right-3 top-2.5 text-xs text-slate-500">€</span>
+                            <span className="absolute right-3 top-2.5 text-xs text-slate-400">€</span>
                           </div>
                         </div>
                         <button 
                           type="submit"
                           disabled={updating}
-                          className="w-full bg-purple-600 hover:bg-purple-500 text-white text-xs font-bold py-2.5 rounded-lg transition disabled:opacity-50"
+                          className="w-full bg-slate-900 hover:bg-slate-700 text-white text-xs font-bold py-2.5 rounded-lg transition disabled:opacity-50"
                         >
                           {updating ? 'Procesando...' : 'Cerrar Caja (Arqueo)'}
                         </button>
                       </form>
                     </div>
 
-                    {/* Registrar Gasto Form */}
+                     {/* Registrar Gasto Form */}
                     <div className="glass-panel rounded-2xl p-6 space-y-4">
-                      <h3 className="text-sm font-bold text-white flex items-center gap-1.5">
-                        <Plus className="h-4.5 w-4.5 text-rose-400" /> Registrar Gasto de Caja (Salida)
+                      <h3 className="text-sm font-bold text-slate-900 flex items-center gap-1.5">
+                        <Plus className="h-4.5 w-4.5 text-rose-500" /> Registrar Gasto de Caja (Salida)
                       </h3>
-                      <p className="text-xs text-slate-400 leading-normal">
+                      <p className="text-xs text-slate-500 leading-normal">
                         Registra cualquier salida de dinero físico de la caja (ej: compras urgentes de suministros o proveedores).
                       </p>
                       <form onSubmit={handleRegisterExpense} className="space-y-3">
                         <div>
-                          <label className="text-[10px] text-slate-400 block mb-1 font-semibold uppercase">Importe del Gasto (€)</label>
+                          <label className="text-[10px] text-slate-500 block mb-1 font-semibold uppercase">Importe del Gasto (€)</label>
                           <div className="relative">
                             <input 
                               type="number"
@@ -1979,20 +1979,20 @@ export default function Dashboard() {
                               placeholder="Ej. 15.00"
                               value={expenseAmountInput}
                               onChange={(e) => setExpenseAmountInput(e.target.value)}
-                              className="w-full text-xs bg-slate-950/80 border border-white/10 text-white rounded-lg p-2.5 pr-8 focus:outline-none focus:border-rose-500"
+                              className="w-full text-xs bg-slate-50 border border-slate-200 text-slate-800 rounded-lg p-2.5 pr-8 focus:outline-none focus:border-rose-400"
                             />
-                            <span className="absolute right-3 top-2.5 text-xs text-slate-500">€</span>
+                            <span className="absolute right-3 top-2.5 text-xs text-slate-400">€</span>
                           </div>
                         </div>
                         <div>
-                          <label className="text-[10px] text-slate-400 block mb-1 font-semibold uppercase">Concepto / Descripción</label>
+                          <label className="text-[10px] text-slate-500 block mb-1 font-semibold uppercase">Concepto / Descripción</label>
                           <input 
                             type="text"
                             required
                             placeholder="Ej. Servilletas papel urgentes"
                             value={expenseDescInput}
                             onChange={(e) => setExpenseDescInput(e.target.value)}
-                            className="w-full text-xs bg-slate-950/80 border border-white/10 text-white rounded-lg p-2.5 focus:outline-none focus:border-rose-500"
+                            className="w-full text-xs bg-slate-50 border border-slate-200 text-slate-800 rounded-lg p-2.5 focus:outline-none focus:border-rose-400"
                           />
                         </div>
                         <button 
@@ -2007,22 +2007,22 @@ export default function Dashboard() {
 
                     {/* Expenses List */}
                     <div className="glass-panel rounded-2xl p-6 space-y-4">
-                      <h3 className="text-sm font-bold text-white flex items-center gap-1.5">
-                        <History className="h-4 w-4 text-rose-400" /> Historial de Gastos de Caja
+                      <h3 className="text-sm font-bold text-slate-900 flex items-center gap-1.5">
+                        <History className="h-4 w-4 text-rose-500" /> Historial de Gastos de Caja
                       </h3>
                       <div className="space-y-3 max-h-[180px] overflow-y-auto pr-1">
                         {expensesList.length === 0 ? (
-                          <p className="text-xs text-slate-500 text-center py-4">No hay gastos registrados en este rango.</p>
+                          <p className="text-xs text-slate-400 text-center py-4">No hay gastos registrados en este rango.</p>
                         ) : (
                           expensesList.map((exp: any) => {
                             const dateStr = new Date(exp.createdAt).toLocaleDateString([], { day: '2-digit', month: '2-digit' });
                             return (
-                              <div key={exp.id} className="p-3 bg-slate-950/60 border border-white/5 rounded-xl text-xs flex justify-between items-center font-mono">
+                              <div key={exp.id} className="p-3 bg-slate-50 border border-slate-200 rounded-xl text-xs flex justify-between items-center font-mono">
                                 <div>
-                                  <span className="font-bold text-white block">{exp.description}</span>
-                                  <span className="text-[9px] text-slate-500 mt-0.5">{dateStr}</span>
+                                  <span className="font-bold text-slate-800 block">{exp.description}</span>
+                                  <span className="text-[9px] text-slate-400 mt-0.5">{dateStr}</span>
                                 </div>
-                                <span className="text-rose-400 font-bold">-{parseFloat(exp.amount).toFixed(2)} €</span>
+                                <span className="text-rose-600 font-bold">-{parseFloat(exp.amount).toFixed(2)} €</span>
                               </div>
                             );
                           })
@@ -2030,39 +2030,39 @@ export default function Dashboard() {
                       </div>
                     </div>
 
-                    {/* Historical Closings List */}
+                     {/* Historical Closings List */}
                     <div className="glass-panel rounded-2xl p-6 space-y-4">
-                      <h3 className="text-sm font-bold text-white flex items-center gap-1.5">
-                        <History className="h-4 w-4 text-purple-400" /> Historial de Cierres (Auditoría)
+                      <h3 className="text-sm font-bold text-slate-900 flex items-center gap-1.5">
+                        <History className="h-4 w-4 text-indigo-500" /> Historial de Cierres (Auditoría)
                       </h3>
                       <div className="space-y-3 max-h-[220px] overflow-y-auto pr-1">
                         {closingsList.length === 0 ? (
-                          <p className="text-xs text-slate-500 text-center py-4">No hay cierres registrados hoy.</p>
+                          <p className="text-xs text-slate-400 text-center py-4">No hay cierres registrados hoy.</p>
                         ) : (
                           closingsList.map((closing: any) => {
                             const dateStr = new Date(closing.createdAt).toLocaleDateString([], { day: '2-digit', month: '2-digit' });
                             const timeStr = new Date(closing.createdAt).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
                             const disc = parseFloat(closing.discrepancy);
                             return (
-                              <div key={closing.id} className="p-3 bg-slate-950/60 border border-white/5 rounded-xl text-xs space-y-1.5">
+                              <div key={closing.id} className="p-3 bg-slate-50 border border-slate-200 rounded-xl text-xs space-y-1.5">
                                 <div className="flex justify-between items-center text-[10px] text-slate-500">
                                   <span>{dateStr} a las {timeStr}</span>
-                                  <span className={`px-1.5 py-0.5 rounded text-[9px] font-bold ${disc === 0 ? 'bg-emerald-500/10 text-emerald-400' : 'bg-rose-500/10 text-rose-400'}`}>
+                                  <span className={`px-1.5 py-0.5 rounded text-[9px] font-bold ${disc === 0 ? 'bg-emerald-50 text-emerald-700 border border-emerald-100' : 'bg-rose-50 text-rose-700 border border-rose-100'}`}>
                                     {disc === 0 ? 'Cuadrado' : 'Descuadre'}
                                   </span>
                                 </div>
                                 <div className="grid grid-cols-3 gap-1 text-center pt-1 text-[11px]">
                                   <div>
                                     <span className="text-[10px] text-slate-500 block">Contado</span>
-                                    <span className="font-semibold text-white">{parseFloat(closing.actualAmount).toFixed(2)}€</span>
+                                    <span className="font-semibold text-slate-900">{parseFloat(closing.actualAmount).toFixed(2)}€</span>
                                   </div>
                                   <div>
                                     <span className="text-[10px] text-slate-500 block">Esperado</span>
-                                    <span className="font-semibold text-slate-300">{parseFloat(closing.expectedAmount).toFixed(2)}€</span>
+                                    <span className="font-semibold text-slate-600">{parseFloat(closing.expectedAmount).toFixed(2)}€</span>
                                   </div>
                                   <div>
                                     <span className="text-[10px] text-slate-500 block">Desviación</span>
-                                    <span className={`font-mono font-bold ${disc > 0 ? 'text-emerald-400' : disc < 0 ? 'text-rose-400' : 'text-slate-400'}`}>
+                                    <span className={`font-mono font-bold ${disc > 0 ? 'text-emerald-600' : disc < 0 ? 'text-rose-600' : 'text-slate-500'}`}>
                                       {disc > 0 ? '+' : ''}{disc.toFixed(2)}€
                                     </span>
                                   </div>
@@ -2089,23 +2089,23 @@ export default function Dashboard() {
             
             {/* Tab Header */}
             <div>
-              <h1 className="text-xl font-extrabold text-white flex items-center gap-2 tracking-wide uppercase">
-                <Settings className="h-5 w-5 text-indigo-400" /> Configuración de la Aplicación y Restaurante
+              <h1 className="text-xl font-extrabold text-slate-900 flex items-center gap-2">
+                <Settings className="h-5 w-5 text-indigo-500" /> Configuración del Restaurante
               </h1>
-              <p className="text-xs text-slate-400 mt-1">Configura los parámetros del local, gestiona la plantilla de empleados y organiza la disposición física del salón.</p>
+              <p className="text-xs text-slate-500 mt-1">Configura los parámetros del local, gestiona la plantilla de empleados y organiza la disposición física del salón.</p>
             </div>
 
             {/* Sub-tab Navigation */}
-            <div className="flex border-b border-white/5 gap-4">
+            <div className="flex border-b border-slate-200 gap-4">
               <button
                 onClick={() => setConfigSubTab('employees')}
-                className={`pb-3 text-xs font-bold transition flex items-center gap-1 ${configSubTab === 'employees' ? 'border-b-2 border-indigo-500 text-white' : 'text-slate-400 hover:text-white'}`}
+                className={`pb-3 text-xs font-bold transition flex items-center gap-1 ${configSubTab === 'employees' ? 'border-b-2 border-indigo-500 text-slate-900' : 'text-slate-500 hover:text-slate-800'}`}
               >
                 <Users className="h-3.5 w-3.5" /> Empleados y Personal
               </button>
               <button
                 onClick={() => setConfigSubTab('tables')}
-                className={`pb-3 text-xs font-bold transition flex items-center gap-1 ${configSubTab === 'tables' ? 'border-b-2 border-indigo-500 text-white' : 'text-slate-400 hover:text-white'}`}
+                className={`pb-3 text-xs font-bold transition flex items-center gap-1 ${configSubTab === 'tables' ? 'border-b-2 border-indigo-500 text-slate-900' : 'text-slate-500 hover:text-slate-800'}`}
               >
                 <MapPin className="h-3.5 w-3.5" /> Zonas y Mesas
               </button>
@@ -2116,54 +2116,54 @@ export default function Dashboard() {
               <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
                 
                 {/* Form column */}
-                <div className="glass-panel p-6 rounded-2xl border border-white/5 bg-slate-900/40 space-y-4 h-fit">
+                <div className="glass-panel p-6 rounded-2xl space-y-4 h-fit">
                   <div>
-                    <h3 className="text-sm font-bold text-white flex items-center gap-1.5">
-                      <UserPlus className="h-4 w-4 text-indigo-400" /> Registrar Nuevo Empleado
+                    <h3 className="text-sm font-bold text-slate-900 flex items-center gap-1.5">
+                      <UserPlus className="h-4 w-4 text-indigo-500" /> Registrar Nuevo Empleado
                     </h3>
-                    <p className="text-[11px] text-slate-400 mt-0.5">Añade personal de sala, cocina o administradores.</p>
+                    <p className="text-[11px] text-slate-500 mt-0.5">Añade personal de sala, cocina o administradores.</p>
                   </div>
 
                   <form onSubmit={handleCreateEmployee} className="space-y-3.5">
                     <div>
-                      <label className="text-[10px] text-slate-400 block mb-1 font-bold uppercase">Nombre Completo</label>
+                      <label className="text-[10px] text-slate-500 block mb-1 font-bold uppercase">Nombre Completo</label>
                       <input 
                         type="text"
                         value={newEmployeeName}
                         onChange={(e) => setNewEmployeeName(e.target.value)}
                         placeholder="Ej. Juan Pérez"
-                        className="w-full text-xs bg-slate-950 border border-white/10 text-white rounded-lg p-2.5 focus:outline-none focus:border-indigo-500"
+                        className="w-full text-xs bg-slate-50 border border-slate-200 text-slate-800 rounded-lg p-2.5 focus:outline-none focus:border-indigo-400"
                         required
                       />
                     </div>
                     <div>
-                      <label className="text-[10px] text-slate-400 block mb-1 font-bold uppercase">Correo Electrónico</label>
+                      <label className="text-[10px] text-slate-500 block mb-1 font-bold uppercase">Correo Electrónico</label>
                       <input 
                         type="email"
                         value={newEmployeeEmail}
                         onChange={(e) => setNewEmployeeEmail(e.target.value)}
                         placeholder="juan@reustafy.com"
-                        className="w-full text-xs bg-slate-950 border border-white/10 text-white rounded-lg p-2.5 focus:outline-none focus:border-indigo-500"
+                        className="w-full text-xs bg-slate-50 border border-slate-200 text-slate-800 rounded-lg p-2.5 focus:outline-none focus:border-indigo-400"
                         required
                       />
                     </div>
                     <div>
-                      <label className="text-[10px] text-slate-400 block mb-1 font-bold uppercase">Contraseña</label>
+                      <label className="text-[10px] text-slate-500 block mb-1 font-bold uppercase">Contraseña</label>
                       <input 
                         type="password"
                         value={newEmployeePassword}
                         onChange={(e) => setNewEmployeePassword(e.target.value)}
                         placeholder="••••••••"
-                        className="w-full text-xs bg-slate-950 border border-white/10 text-white rounded-lg p-2.5 focus:outline-none focus:border-indigo-500"
+                        className="w-full text-xs bg-slate-50 border border-slate-200 text-slate-800 rounded-lg p-2.5 focus:outline-none focus:border-indigo-400"
                         required
                       />
                     </div>
                     <div>
-                      <label className="text-[10px] text-slate-400 block mb-1 font-bold uppercase">Rol y Permisos</label>
+                      <label className="text-[10px] text-slate-500 block mb-1 font-bold uppercase">Rol y Permisos</label>
                       <select
                         value={newEmployeeRole}
                         onChange={(e: any) => setNewEmployeeRole(e.target.value)}
-                        className="w-full text-xs bg-slate-950 border border-white/10 text-white rounded-lg p-2.5 focus:outline-none focus:border-indigo-500"
+                        className="w-full text-xs bg-slate-50 border border-slate-200 text-slate-800 rounded-lg p-2.5 focus:outline-none focus:border-indigo-400"
                       >
                         <option value="waiter">Camarero (Waiter Mobile)</option>
                         <option value="chef">Cocinero (Kitchen KDS)</option>
@@ -2174,7 +2174,7 @@ export default function Dashboard() {
                     <button
                       type="submit"
                       disabled={updating}
-                      className="w-full bg-indigo-600 hover:bg-indigo-500 text-white text-xs font-bold py-3 rounded-lg transition"
+                      className="w-full bg-slate-900 hover:bg-slate-700 text-white text-xs font-bold py-3 rounded-lg transition"
                     >
                       {updating ? 'Procesando...' : 'Registrar Empleado'}
                     </button>
@@ -2183,21 +2183,21 @@ export default function Dashboard() {
 
                 {/* Grid list column */}
                 <div className="lg:col-span-2 space-y-4">
-                  <span className="text-[10px] text-slate-400 uppercase font-bold block">Plantilla de Personal Activa</span>
+                  <span className="text-[10px] text-slate-500 uppercase font-bold block">Plantilla de Personal Activa</span>
                   
                   <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                     {employeesList.length === 0 ? (
-                      <p className="text-xs text-slate-500 col-span-2 text-center py-12">No hay empleados registrados.</p>
+                      <p className="text-xs text-slate-400 col-span-2 text-center py-12">No hay empleados registrados.</p>
                     ) : (
                       employeesList.map((emp) => (
-                        <div key={emp.id} className="p-4 rounded-xl border border-white/5 bg-slate-900/20 flex justify-between items-center">
+                        <div key={emp.id} className="p-4 rounded-xl border border-slate-200 bg-white flex justify-between items-center shadow-sm">
                           <div>
-                            <span className="text-sm font-bold text-white block">{emp.name}</span>
-                            <span className="text-[11px] text-slate-400 block mt-0.5">{emp.email}</span>
+                            <span className="text-sm font-bold text-slate-900 block">{emp.name}</span>
+                            <span className="text-[11px] text-slate-500 block mt-0.5">{emp.email}</span>
                             <span className={`inline-block text-[9px] font-black uppercase px-2 py-0.5 rounded-full mt-2 ${
-                              emp.role === 'admin' ? 'bg-indigo-500/15 text-indigo-300 border border-indigo-500/30' :
-                              emp.role === 'chef' ? 'bg-amber-500/15 text-amber-300 border border-amber-500/30' :
-                              'bg-emerald-500/15 text-emerald-300 border border-emerald-500/30'
+                              emp.role === 'admin' ? 'bg-indigo-50 text-indigo-700 border border-indigo-100' :
+                              emp.role === 'chef' ? 'bg-amber-50 text-amber-700 border border-amber-100' :
+                              'bg-emerald-50 text-emerald-700 border border-emerald-100'
                             }`}>
                               {emp.role === 'admin' ? 'Administrador' : emp.role === 'chef' ? 'Cocina KDS' : 'Camarero PWA'}
                             </span>
@@ -2206,7 +2206,7 @@ export default function Dashboard() {
                           <button
                             onClick={() => handleDeleteEmployee(emp.id)}
                             disabled={updating}
-                            className="p-2 bg-rose-500/10 hover:bg-rose-500/20 border border-rose-500/20 rounded-lg text-rose-400 hover:text-rose-300 transition"
+                            className="p-2 bg-rose-50 hover:bg-rose-100 border border-rose-200 rounded-lg text-rose-500 hover:text-rose-600 transition"
                           >
                             <Trash className="h-4 w-4" />
                           </button>
@@ -2227,32 +2227,32 @@ export default function Dashboard() {
                 <div className="space-y-6">
                   
                   {/* Create Table Form */}
-                  <div className="glass-panel p-6 rounded-2xl border border-white/5 bg-slate-900/40 space-y-4">
+                  <div className="glass-panel p-6 rounded-2xl space-y-4">
                     <div>
-                      <h3 className="text-sm font-bold text-white flex items-center gap-1.5">
-                        <Plus className="h-4.5 w-4.5 text-indigo-400" /> Crear Nueva Mesa
+                      <h3 className="text-sm font-bold text-slate-900 flex items-center gap-1.5">
+                        <Plus className="h-4.5 w-4.5 text-indigo-500" /> Crear Nueva Mesa
                       </h3>
-                      <p className="text-[11px] text-slate-400 mt-0.5">Añade una mesa física al restaurante.</p>
+                      <p className="text-[11px] text-slate-500 mt-0.5">Añade una mesa física al restaurante.</p>
                     </div>
 
                     <form onSubmit={handleCreateTable} className="space-y-3">
                       <div>
-                        <label className="text-[10px] text-slate-400 block mb-1 font-bold uppercase">Identificador de Mesa</label>
+                        <label className="text-[10px] text-slate-500 block mb-1 font-bold uppercase">Identificador de Mesa</label>
                         <input 
                           type="text"
                           value={newTableNumber}
                           onChange={(e) => setNewTableNumber(e.target.value)}
                           placeholder="Ej. Mesa 12, Barra 3"
-                          className="w-full text-xs bg-slate-950 border border-white/10 text-white rounded-lg p-2.5 focus:outline-none focus:border-indigo-500"
+                          className="w-full text-xs bg-slate-50 border border-slate-200 text-slate-800 rounded-lg p-2.5 focus:outline-none focus:border-indigo-400"
                           required
                         />
                       </div>
                       <div>
-                        <label className="text-[10px] text-slate-400 block mb-1 font-bold uppercase">Zona de Servicio</label>
+                        <label className="text-[10px] text-slate-500 block mb-1 font-bold uppercase">Zona de Servicio</label>
                         <select
                           value={newTableZone}
                           onChange={(e: any) => setNewTableZone(e.target.value)}
-                          className="w-full text-xs bg-slate-950 border border-white/10 text-white rounded-lg p-2.5 focus:outline-none focus:border-indigo-500"
+                          className="w-full text-xs bg-slate-50 border border-slate-200 text-slate-800 rounded-lg p-2.5 focus:outline-none focus:border-indigo-400"
                         >
                           <option value="salon">Salón Interior</option>
                           <option value="terrace">Terraza Exterior</option>
@@ -2260,14 +2260,14 @@ export default function Dashboard() {
                         </select>
                       </div>
                       <div>
-                        <label className="text-[10px] text-slate-400 block mb-1 font-bold uppercase">Capacidad (Personas)</label>
+                        <label className="text-[10px] text-slate-500 block mb-1 font-bold uppercase">Capacidad (Personas)</label>
                         <input 
                           type="number"
                           value={newTableCapacity}
                           onChange={(e) => setNewTableCapacity(e.target.value)}
                           min="1"
                           max="20"
-                          className="w-full text-xs bg-slate-950 border border-white/10 text-white rounded-lg p-2.5 focus:outline-none focus:border-indigo-500"
+                          className="w-full text-xs bg-slate-50 border border-slate-200 text-slate-800 rounded-lg p-2.5 focus:outline-none focus:border-indigo-400"
                           required
                         />
                       </div>
@@ -2275,7 +2275,7 @@ export default function Dashboard() {
                       <button
                         type="submit"
                         disabled={updating}
-                        className="w-full bg-indigo-600 hover:bg-indigo-500 text-white text-xs font-bold py-3 rounded-lg transition"
+                        className="w-full bg-slate-900 hover:bg-slate-700 text-white text-xs font-bold py-3 rounded-lg transition"
                       >
                         Crear Mesa
                       </button>
@@ -2283,21 +2283,21 @@ export default function Dashboard() {
                   </div>
 
                   {/* Join Tables Form */}
-                  <div className="glass-panel p-6 rounded-2xl border border-white/5 bg-slate-900/40 space-y-4">
+                  <div className="glass-panel p-6 rounded-2xl space-y-4">
                     <div>
-                      <h3 className="text-sm font-bold text-white flex items-center gap-1.5">
-                        <Link className="h-4 w-4 text-indigo-400" /> Juntar Mesas
+                      <h3 className="text-sm font-bold text-slate-900 flex items-center gap-1.5">
+                        <Link className="h-4 w-4 text-indigo-500" /> Juntar Mesas
                       </h3>
-                      <p className="text-[11px] text-slate-400 mt-0.5">Enlaza dos mesas para sincronizar sus comandas y estados.</p>
+                      <p className="text-[11px] text-slate-500 mt-0.5">Enlaza dos mesas para sincronizar sus comandas y estados.</p>
                     </div>
 
                     <form onSubmit={handleJoinTables} className="space-y-3">
                       <div>
-                        <label className="text-[10px] text-slate-400 block mb-1 font-bold uppercase">Mesa Origen (A)</label>
+                        <label className="text-[10px] text-slate-500 block mb-1 font-bold uppercase">Mesa Origen (A)</label>
                         <select
                           value={joinTableIdA}
                           onChange={(e) => setJoinTableIdA(e.target.value)}
-                          className="w-full text-xs bg-slate-950 border border-white/10 text-white rounded-lg p-2.5 focus:outline-none"
+                          className="w-full text-xs bg-slate-50 border border-slate-200 text-slate-800 rounded-lg p-2.5 focus:outline-none"
                         >
                           <option value="">Selecciona mesa...</option>
                           {tablesList.map(t => (
@@ -2307,11 +2307,11 @@ export default function Dashboard() {
                       </div>
 
                       <div>
-                        <label className="text-[10px] text-slate-400 block mb-1 font-bold uppercase">Mesa Destino (B)</label>
+                        <label className="text-[10px] text-slate-500 block mb-1 font-bold uppercase">Mesa Destino (B)</label>
                         <select
                           value={joinTableIdB}
                           onChange={(e) => setJoinTableIdB(e.target.value)}
-                          className="w-full text-xs bg-slate-950 border border-white/10 text-white rounded-lg p-2.5 focus:outline-none"
+                          className="w-full text-xs bg-slate-50 border border-slate-200 text-slate-800 rounded-lg p-2.5 focus:outline-none"
                         >
                           <option value="">Selecciona mesa...</option>
                           {tablesList.map(t => (
@@ -2323,7 +2323,7 @@ export default function Dashboard() {
                       <button
                         type="submit"
                         disabled={updating}
-                        className="w-full bg-indigo-600 hover:bg-indigo-500 text-white text-xs font-bold py-3 rounded-lg transition"
+                        className="w-full bg-slate-900 hover:bg-slate-700 text-white text-xs font-bold py-3 rounded-lg transition"
                       >
                         Vincular Mesas
                       </button>
@@ -2334,7 +2334,7 @@ export default function Dashboard() {
 
                 {/* Columns 2-3: Active Tables listing */}
                 <div className="lg:col-span-2 space-y-4">
-                  <span className="text-[10px] text-slate-400 uppercase font-bold block">Listado y Distribución de Mesas</span>
+                  <span className="text-[10px] text-slate-500 uppercase font-bold block">Listado y Distribución de Mesas</span>
                   
                   <div className="grid grid-cols-1 md:grid-cols-2 gap-4 max-h-[550px] overflow-y-auto pr-1">
                     {tablesList.map((t) => {
@@ -2343,38 +2343,38 @@ export default function Dashboard() {
                         : null;
 
                       return (
-                        <div key={t.id} className="p-4 rounded-xl border border-white/5 bg-slate-900/20 flex flex-col justify-between space-y-3">
+                        <div key={t.id} className="p-4 rounded-xl border border-slate-200 bg-white flex flex-col justify-between space-y-3 shadow-sm">
                           <div className="flex justify-between items-start">
                             <div>
-                              <span className="text-base font-bold text-white block">Mesa {t.tableNumber}</span>
-                              <span className="text-[10px] text-slate-400 uppercase block font-semibold mt-0.5">Zona: {t.zone} • Capacidad: {t.capacity} comensales</span>
+                              <span className="text-base font-bold text-slate-900 block">Mesa {t.tableNumber}</span>
+                              <span className="text-[10px] text-slate-500 uppercase block font-semibold mt-0.5">Zona: {t.zone} • Capacidad: {t.capacity} comensales</span>
                             </div>
-                            <span className={`text-[9px] uppercase font-extrabold px-2 py-0.5 rounded ${
-                              t.status === 'free' ? 'bg-emerald-500/10 text-emerald-400' :
-                              t.status === 'eating' ? 'bg-indigo-500/10 text-indigo-400' :
-                              'bg-amber-500/10 text-amber-400'
+                            <span className={`text-[9px] uppercase font-extrabold px-2 py-0.5 rounded border ${
+                              t.status === 'free' ? 'bg-emerald-50 text-emerald-700 border-emerald-200' :
+                              t.status === 'eating' ? 'bg-blue-50 text-blue-700 border-blue-200' :
+                              'bg-amber-50 text-amber-700 border-amber-200'
                             }`}>
                               {t.status}
                             </span>
                           </div>
 
                           {joinedPartner && (
-                            <div className="p-2 rounded bg-indigo-500/5 border border-indigo-500/10 text-[10px] text-indigo-300 font-bold flex justify-between items-center">
+                            <div className="p-2 rounded bg-indigo-50 border border-indigo-100 text-[10px] text-indigo-700 font-bold flex justify-between items-center">
                               <span>🔗 Unida a Mesa {joinedPartner}</span>
                               <button
                                 onClick={() => handleUnjoinTable(t.id)}
-                                className="text-[9px] text-rose-400 hover:text-rose-300 font-extrabold hover:underline bg-transparent border-none cursor-pointer"
+                                className="text-[9px] text-rose-600 hover:text-rose-700 font-extrabold hover:underline bg-transparent border-none cursor-pointer"
                               >
                                 Separar
                               </button>
                             </div>
                           )}
 
-                          <div className="flex justify-end pt-2 border-t border-white/5">
+                          <div className="flex justify-end pt-2 border-t border-slate-100">
                             <button
                               onClick={() => handleDeleteTable(t.id)}
                               disabled={updating}
-                              className="p-2 bg-rose-500/10 hover:bg-rose-500/20 border border-rose-500/20 rounded-lg text-rose-400 hover:text-rose-300 transition"
+                              className="p-2 bg-rose-50 hover:bg-rose-100 border border-rose-200 rounded-lg text-rose-500 hover:text-rose-600 transition"
                             >
                               <Trash className="h-3.5 w-3.5" />
                             </button>
