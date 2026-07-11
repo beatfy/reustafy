@@ -103,13 +103,43 @@ export const activityLogs = pgTable('activity_logs', {
   timestamp: timestamp('timestamp', { withTimezone: true }).defaultNow()
 });
 
+// 9. Customers Table
+export const customers = pgTable('customers', {
+  id: uuid('id').primaryKey().defaultRandom(),
+  tenantId: uuid('tenant_id').notNull().references(() => tenants.id, { onDelete: 'cascade' }),
+  name: varchar('name', { length: 255 }).notNull(),
+  email: varchar('email', { length: 255 }).notNull(),
+  phone: varchar('phone', { length: 50 }),
+  points: integer('points').notNull().default(0),
+  allergies: varchar('allergies', { length: 255 }),
+  preferences: text('preferences'),
+  createdAt: timestamp('created_at', { withTimezone: true }).defaultNow()
+}, (table) => {
+  return {
+    tenantEmailIdx: uniqueIndex('customers_tenant_email_idx').on(table.tenantId, table.email)
+  };
+});
+
+// 10. Register Closings Table
+export const registerClosings = pgTable('register_closings', {
+  id: uuid('id').primaryKey().defaultRandom(),
+  tenantId: uuid('tenant_id').notNull().references(() => tenants.id, { onDelete: 'cascade' }),
+  userId: uuid('user_id').references(() => users.id, { onDelete: 'set null' }),
+  expectedAmount: decimal('expected_amount', { precision: 10, scale: 2 }).notNull(),
+  actualAmount: decimal('actual_amount', { precision: 10, scale: 2 }).notNull(),
+  discrepancy: decimal('discrepancy', { precision: 10, scale: 2 }).notNull(),
+  createdAt: timestamp('created_at', { withTimezone: true }).defaultNow()
+});
+
 // Relations Definitions (Drizzle ORM helper)
 export const tenantsRelations = relations(tenants, ({ many }) => ({
   users: many(users),
   tables: many(tables),
   orders: many(orders),
   reservations: many(reservations),
-  activityLogs: many(activityLogs)
+  activityLogs: many(activityLogs),
+  customers: many(customers),
+  registerClosings: many(registerClosings)
 }));
 
 export const usersRelations = relations(users, ({ one, many }) => ({
@@ -144,4 +174,13 @@ export const reservationsRelations = relations(reservations, ({ one }) => ({
 export const activityLogsRelations = relations(activityLogs, ({ one }) => ({
   tenant: one(tenants, { fields: [activityLogs.tenantId], references: [tenants.id] }),
   user: one(users, { fields: [activityLogs.userId], references: [users.id] })
+}));
+
+export const customersRelations = relations(customers, ({ one }) => ({
+  tenant: one(tenants, { fields: [customers.tenantId], references: [tenants.id] })
+}));
+
+export const registerClosingsRelations = relations(registerClosings, ({ one }) => ({
+  tenant: one(tenants, { fields: [registerClosings.tenantId], references: [tenants.id] }),
+  user: one(users, { fields: [registerClosings.userId], references: [users.id] })
 }));

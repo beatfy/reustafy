@@ -69,6 +69,22 @@ export default function Dashboard() {
   const [selectedTable, setSelectedTable] = useState<Table | null>(null);
   const [assigningReservation, setAssigningReservation] = useState<Reservation | null>(null);
   
+  // Loyalty & Marketing states
+  const [loyaltyCustomers, setLoyaltyCustomers] = useState<any[]>([]);
+  const [campaignLogs, setCampaignLogs] = useState<any[]>([]);
+  const [isCampaignSimulating, setIsCampaignSimulating] = useState(false);
+  const [newCustName, setNewCustName] = useState('');
+  const [newCustEmail, setNewCustEmail] = useState('');
+  const [newCustPhone, setNewCustPhone] = useState('');
+  const [newCustAllergies, setNewCustAllergies] = useState('');
+  const [newCustPref, setNewCustPref] = useState('');
+
+  // Finance states
+  const [pnlData, setPnlData] = useState<any>(null);
+  const [closingsList, setClosingsList] = useState<any[]>([]);
+  const [escandallosList, setEscandallosList] = useState<any[]>([]);
+  const [actualAmountInput, setActualAmountInput] = useState('');
+
   // Loading & Error states
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState('');
@@ -125,6 +141,46 @@ export default function Dashboard() {
       const logsData = await logsRes.json();
       setLogsList(logsData);
 
+      const activeUser = user || (typeof window !== 'undefined' ? JSON.parse(localStorage.getItem('reustafy_user') || 'null') : null);
+      
+      // 4. Fetch loyalty customers if medium or premium
+      if (activeUser && (activeUser.subscriptionTier === 'medium' || activeUser.subscriptionTier === 'premium')) {
+        const loyaltyRes = await fetch(`${apiUrl}/api/loyalty/customers`, {
+          headers: { Authorization: `Bearer ${activeToken}` }
+        });
+        if (loyaltyRes.ok) {
+          const loyaltyData = await loyaltyRes.json();
+          setLoyaltyCustomers(loyaltyData);
+        }
+      }
+
+      // 5. Fetch finance reports & costing if premium
+      if (activeUser && activeUser.subscriptionTier === 'premium') {
+        const pnlRes = await fetch(`${apiUrl}/api/finance/pnl`, {
+          headers: { Authorization: `Bearer ${activeToken}` }
+        });
+        if (pnlRes.ok) {
+          const pnlResult = await pnlRes.json();
+          setPnlData(pnlResult.data);
+        }
+
+        const costingRes = await fetch(`${apiUrl}/api/finance/costing`, {
+          headers: { Authorization: `Bearer ${activeToken}` }
+        });
+        if (costingRes.ok) {
+          const costingResult = await costingRes.json();
+          setEscandallosList(costingResult.items);
+        }
+
+        const closingsRes = await fetch(`${apiUrl}/api/finance/closings`, {
+          headers: { Authorization: `Bearer ${activeToken}` }
+        });
+        if (closingsRes.ok) {
+          const closingsData = await closingsRes.json();
+          setClosingsList(closingsData);
+        }
+      }
+
     } catch (err: any) {
       setError(err.message || 'Error de sincronización de datos');
     } finally {
@@ -174,6 +230,97 @@ export default function Dashboard() {
       }
 
       setSelectedTable(null);
+    } catch (err: any) {
+      alert(err.message);
+    } finally {
+      setUpdating(false);
+    }
+  };
+
+  // Add Loyalty Customer
+  const handleAddLoyaltyCustomer = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!newCustName || !newCustEmail) return;
+
+    setUpdating(true);
+    try {
+      const res = await fetch(`${apiUrl}/api/loyalty/customers`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          Authorization: `Bearer ${token}`
+        },
+        body: JSON.stringify({
+          name: newCustName,
+          email: newCustEmail,
+          phone: newCustPhone || null,
+          allergies: newCustAllergies || null,
+          preferences: newCustPref || null,
+          points: 10 // Welcome points
+        })
+      });
+
+      if (!res.ok) throw new Error('Error al registrar cliente');
+      
+      setNewCustName('');
+      setNewCustEmail('');
+      setNewCustPhone('');
+      setNewCustAllergies('');
+      setNewCustPref('');
+      
+      await fetchData();
+    } catch (err: any) {
+      alert(err.message);
+    } finally {
+      setUpdating(false);
+    }
+  };
+
+  // Run campaign automation simulation
+  const handleRunCampaignSimulation = async () => {
+    setIsCampaignSimulating(true);
+    try {
+      const res = await fetch(`${apiUrl}/api/loyalty/triggers`, {
+        method: 'POST',
+        headers: { Authorization: `Bearer ${token}` }
+      });
+      if (!res.ok) throw new Error('Error al simular campaña');
+      const data = await res.json();
+      setCampaignLogs(data.logs || []);
+      
+      await fetchData();
+    } catch (err: any) {
+      alert(err.message);
+    } finally {
+      setIsCampaignSimulating(false);
+    }
+  };
+
+  // Submit Blind Register Closing (Arqueo)
+  const handleRegisterClosingSubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
+    const amount = parseFloat(actualAmountInput);
+    if (isNaN(amount) || amount < 0) {
+      alert('Por favor introduce un monto válido.');
+      return;
+    }
+
+    setUpdating(true);
+    try {
+      const res = await fetch(`${apiUrl}/api/finance/closings`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          Authorization: `Bearer ${token}`
+        },
+        body: JSON.stringify({ actualAmount: amount })
+      });
+
+      if (!res.ok) throw new Error('Error al registrar arqueo');
+      setActualAmountInput('');
+      
+      await fetchData();
+      alert('Arqueo registrado y descuadre guardado en el historial.');
     } catch (err: any) {
       alert(err.message);
     } finally {
@@ -581,69 +728,212 @@ export default function Dashboard() {
 
             ) : (
 
-              /* Growth / Marketing Module UI Mockup */
-              <div className="glass-panel rounded-2xl p-8 space-y-6">
-                <div>
-                  <h2 className="text-2xl font-bold text-white flex items-center gap-2">
+              /* Growth / Marketing Module UI */
+              <div className="space-y-6">
+                
+                {/* Header */}
+                <div className="glass-panel rounded-2xl p-6">
+                  <h2 className="text-xl font-bold text-white flex items-center gap-2">
                     <UserCheck className="h-6 w-6 text-emerald-400" /> Panel de Fidelización y Automatización de Marketing
                   </h2>
                   <p className="text-xs text-slate-400 mt-1">Herramientas Growth para fidelización de clientes (Inquilino: {user.tenantName}).</p>
                 </div>
 
-                <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+                <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
                   
-                  {/* Widget Public Widget Details */}
-                  <div className="p-5 rounded-xl bg-slate-900/40 border border-white/5 space-y-3">
-                    <h3 className="font-bold text-white flex items-center gap-1.5 text-sm">
-                      <MessageSquare className="h-4 w-4 text-emerald-400" /> Widget Reservas Públicas
-                    </h3>
-                    <p className="text-xs text-slate-400 leading-relaxed">
-                      Copia el código script en tu página web corporativa para sincronizar las reservas directamente:
-                    </p>
-                    <pre className="p-3 bg-slate-950 rounded-lg text-[10px] font-mono text-slate-400 overflow-x-auto border border-white/5">
-                      {`<iframe src="http://reustafy.com/widget?tenantId=${user.tenantId}"></iframe>`}
-                    </pre>
-                    <span className="text-[10px] bg-emerald-500/10 text-emerald-300 px-2 py-0.5 rounded font-bold">API Public Active</span>
-                  </div>
+                  {/* Left Column: Loyalty Directory & Form */}
+                  <div className="lg:col-span-2 space-y-6">
+                    
+                    {/* Add Customer Form */}
+                    <div className="glass-panel rounded-2xl p-6 space-y-4">
+                      <h3 className="text-sm font-bold text-white flex items-center gap-1.5">
+                        <Plus className="h-4 w-4 text-emerald-400" /> Registrar Cliente de Fidelidad
+                      </h3>
+                      <form onSubmit={handleAddLoyaltyCustomer} className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                        <div>
+                          <label className="text-[10px] text-slate-400 block mb-1 font-semibold uppercase">Nombre Completo</label>
+                          <input 
+                            type="text"
+                            required
+                            placeholder="Ej. Juan Pérez"
+                            value={newCustName}
+                            onChange={(e) => setNewCustName(e.target.value)}
+                            className="w-full text-xs bg-slate-950/80 border border-white/10 text-white rounded-lg p-2.5 focus:outline-none focus:border-indigo-500"
+                          />
+                        </div>
+                        <div>
+                          <label className="text-[10px] text-slate-400 block mb-1 font-semibold uppercase">Correo Electrónico</label>
+                          <input 
+                            type="email"
+                            required
+                            placeholder="juan@gmail.com"
+                            value={newCustEmail}
+                            onChange={(e) => setNewCustEmail(e.target.value)}
+                            className="w-full text-xs bg-slate-950/80 border border-white/10 text-white rounded-lg p-2.5 focus:outline-none focus:border-indigo-500"
+                          />
+                        </div>
+                        <div>
+                          <label className="text-[10px] text-slate-400 block mb-1 font-semibold uppercase">Teléfono (Opcional)</label>
+                          <input 
+                            type="text"
+                            placeholder="+34600111222"
+                            value={newCustPhone}
+                            onChange={(e) => setNewCustPhone(e.target.value)}
+                            className="w-full text-xs bg-slate-950/80 border border-white/10 text-white rounded-lg p-2.5 focus:outline-none focus:border-indigo-500"
+                          />
+                        </div>
+                        <div>
+                          <label className="text-[10px] text-slate-400 block mb-1 font-semibold uppercase">Alergias (Opcional)</label>
+                          <input 
+                            type="text"
+                            placeholder="Gluten, Marisco, etc."
+                            value={newCustAllergies}
+                            onChange={(e) => setNewCustAllergies(e.target.value)}
+                            className="w-full text-xs bg-slate-950/80 border border-white/10 text-white rounded-lg p-2.5 focus:outline-none focus:border-indigo-500"
+                          />
+                        </div>
+                        <div className="sm:col-span-2">
+                          <label className="text-[10px] text-slate-400 block mb-1 font-semibold uppercase">Preferencias o Notas</label>
+                          <textarea 
+                            placeholder="Prefiere mesa exterior, vino tinto, etc."
+                            value={newCustPref}
+                            onChange={(e) => setNewCustPref(e.target.value)}
+                            className="w-full text-xs bg-slate-950/80 border border-white/10 text-white rounded-lg p-2.5 h-16 resize-none focus:outline-none focus:border-indigo-500"
+                          />
+                        </div>
+                        <div className="sm:col-span-2 flex justify-end">
+                          <button 
+                            type="submit"
+                            disabled={updating}
+                            className="bg-emerald-600 text-white text-xs font-bold py-2 px-5 rounded-lg hover:bg-emerald-500 transition disabled:opacity-50"
+                          >
+                            {updating ? 'Guardando...' : 'Fidelizar Cliente'}
+                          </button>
+                        </div>
+                      </form>
+                    </div>
 
-                  {/* Customer Allergies / Loyalty profiles */}
-                  <div className="p-5 rounded-xl bg-slate-900/40 border border-white/5 space-y-3">
-                    <h3 className="font-bold text-white flex items-center gap-1.5 text-sm">
-                      <Star className="h-4 w-4 text-emerald-400" /> Historial y Preferencias
-                    </h3>
-                    <div className="space-y-2">
-                      <div className="p-2 bg-slate-950 rounded text-xs">
-                        <span className="font-semibold block text-slate-300">Lucía Pérez</span>
-                        <span className="text-[10px] text-red-400 font-bold block mt-0.5">Alergia: Marisco y Gluten</span>
-                      </div>
-                      <div className="p-2 bg-slate-950 rounded text-xs">
-                        <span className="font-semibold block text-slate-300">Marcos Gómez</span>
-                        <span className="text-[10px] text-indigo-300 font-bold block mt-0.5">Prefiere mesa en Terraza</span>
+                    {/* Customer Directory Table */}
+                    <div className="glass-panel rounded-2xl p-6 space-y-4">
+                      <h3 className="text-sm font-bold text-white flex items-center gap-1.5">
+                        <Star className="h-4 w-4 text-emerald-400" /> Directorio de Clientes Fidelizados
+                      </h3>
+                      <div className="overflow-x-auto">
+                        <table className="w-full text-left text-xs border-collapse">
+                          <thead>
+                            <tr className="border-b border-white/10 text-slate-400 uppercase text-[10px]">
+                              <th className="py-2.5 font-semibold">Cliente</th>
+                              <th className="py-2.5 font-semibold">Contacto</th>
+                              <th className="py-2.5 font-semibold">Puntos</th>
+                              <th className="py-2.5 font-semibold">Alergias / Preferencias</th>
+                            </tr>
+                          </thead>
+                          <tbody>
+                            {loyaltyCustomers.length === 0 ? (
+                              <tr>
+                                <td colSpan={4} className="py-6 text-center text-slate-500">No hay clientes fidelizados registrados aún.</td>
+                              </tr>
+                            ) : (
+                              loyaltyCustomers.map((cust: any) => (
+                                <tr key={cust.id} className="border-b border-white/5 last:border-b-0 hover:bg-white/5 transition">
+                                  <td className="py-3 font-semibold text-white">{cust.name}</td>
+                                  <td className="py-3 text-slate-300">
+                                    <span className="block">{cust.email}</span>
+                                    <span className="text-[10px] text-slate-500">{cust.phone || 'Sin teléfono'}</span>
+                                  </td>
+                                  <td className="py-3">
+                                    <span className="font-mono bg-indigo-500/20 text-indigo-300 px-2 py-0.5 rounded font-bold">
+                                      {cust.points} pts
+                                    </span>
+                                  </td>
+                                  <td className="py-3 text-slate-300">
+                                    {cust.allergies && (
+                                      <span className="inline-block bg-red-500/20 text-red-300 px-1.5 py-0.5 rounded text-[10px] font-bold mr-1.5">
+                                        ⚠️ {cust.allergies}
+                                      </span>
+                                    )}
+                                    <span className="text-[11px] text-slate-400 italic block mt-0.5">{cust.preferences || 'Sin notas especiales'}</span>
+                                  </td>
+                                </tr>
+                              ))
+                            )}
+                          </tbody>
+                        </table>
                       </div>
                     </div>
+
                   </div>
 
-                  {/* Automation triggers */}
-                  <div className="p-5 rounded-xl bg-slate-900/40 border border-white/5 space-y-3">
-                    <h3 className="font-bold text-white flex items-center gap-1.5 text-sm">
-                      <Clock className="h-4 w-4 text-emerald-400" /> Automatizaciones Activas
-                    </h3>
-                    <div className="space-y-3">
-                      <div className="flex justify-between items-center text-xs">
-                        <span className="text-slate-400">Trigger: 30 Días Inactivo</span>
-                        <span className="bg-emerald-500/20 text-emerald-400 px-1.5 py-0.5 rounded text-[10px]">Activo</span>
-                      </div>
-                      <div className="flex justify-between items-center text-xs">
-                        <span className="text-slate-400">Trigger: Cumpleaños Cliente</span>
-                        <span className="bg-emerald-500/20 text-emerald-400 px-1.5 py-0.5 rounded text-[10px]">Activo</span>
-                      </div>
-                      <p className="text-[10px] text-slate-500 leading-normal pt-2 border-t border-white/5">
-                        Envía correos electrónicos de reactivación y cupones de fidelidad de manera automatizada.
+                  {/* Right Column: Public reservation widget & Marketing Trigger simulation */}
+                  <div className="space-y-6">
+                    
+                    {/* Public Reservations Widget snippet */}
+                    <div className="glass-panel rounded-2xl p-6 space-y-3">
+                      <h3 className="text-sm font-bold text-white flex items-center gap-1.5">
+                        <MessageSquare className="h-4 w-4 text-emerald-400" /> Widget Reservas Públicas
+                      </h3>
+                      <p className="text-xs text-slate-400 leading-relaxed">
+                        Inserta este widget en la web corporativa de tu restaurante para que los comensales reserven online:
                       </p>
+                      <pre className="p-3 bg-slate-950/80 rounded-lg text-[10px] font-mono text-slate-400 overflow-x-auto border border-white/5">
+                        {`<iframe src="${apiUrl}/public-widget?tenantId=${user.tenantId}"></iframe>`}
+                      </pre>
+                      <div className="flex justify-between items-center text-[10px]">
+                        <span className="bg-emerald-500/10 text-emerald-300 px-2 py-0.5 rounded font-bold">Aislamiento RLS Protegido</span>
+                        <a 
+                          href={`${apiUrl}/public-widget?tenantId=${user.tenantId}`} 
+                          target="_blank" 
+                          rel="noreferrer"
+                          className="text-indigo-400 hover:text-indigo-300 font-semibold"
+                        >
+                          Ver Preview Widget ↗
+                        </a>
+                      </div>
                     </div>
+
+                    {/* Marketing Automation triggers */}
+                    <div className="glass-panel rounded-2xl p-6 space-y-4">
+                      <h3 className="text-sm font-bold text-white flex items-center gap-1.5">
+                        <Clock className="h-4 w-4 text-emerald-400" /> Triggers de Automatización
+                      </h3>
+                      
+                      <div className="p-3 bg-slate-900/40 border border-white/5 rounded-xl space-y-3 text-xs">
+                        <div className="flex justify-between items-center">
+                          <span className="font-semibold text-slate-300">Campaña de Reactivación</span>
+                          <span className="bg-emerald-500/20 text-emerald-400 px-1.5 py-0.5 rounded text-[9px] font-bold">Activo</span>
+                        </div>
+                        <p className="text-[11px] text-slate-400 leading-normal">
+                          Filtra a los clientes fidelizados con más de 50 puntos y les envía de forma automática un cupón personalizado de reactivación.
+                        </p>
+                        <button 
+                          onClick={handleRunCampaignSimulation}
+                          disabled={isCampaignSimulating}
+                          className="w-full bg-indigo-600 hover:bg-indigo-500 text-white text-xs font-bold py-2 rounded-lg transition disabled:opacity-50 flex items-center justify-center gap-1.5"
+                        >
+                          {isCampaignSimulating ? 'Simulando...' : 'Ejecutar Simulación de Trigger'}
+                        </button>
+                      </div>
+
+                      {/* Simulation Logs */}
+                      {campaignLogs.length > 0 && (
+                        <div className="space-y-2">
+                          <h4 className="text-[10px] text-slate-400 uppercase font-bold">Logs de Envío de Campaña:</h4>
+                          <div className="p-2.5 bg-slate-950 rounded-lg max-h-[140px] overflow-y-auto space-y-2 border border-white/5">
+                            {campaignLogs.map((log: any, idx: number) => (
+                              <div key={idx} className="text-[11px] font-mono text-indigo-300 leading-snug">
+                                {log.msg}
+                              </div>
+                            ))}
+                          </div>
+                        </div>
+                      )}
+
+                    </div>
+
                   </div>
 
                 </div>
+
               </div>
 
             )}
@@ -681,7 +971,9 @@ export default function Dashboard() {
                 <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 gap-6">
                   <div className="glass-panel rounded-xl p-5 border-l-4 border-emerald-400">
                     <span className="text-xs font-semibold text-slate-400 uppercase block">Ventas del Mes</span>
-                    <span className="text-2xl font-bold text-white block mt-1">24.500 €</span>
+                    <span className="text-2xl font-bold text-white block mt-1">
+                      {pnlData ? `${parseFloat(pnlData.totalRevenue).toLocaleString('es-ES')} €` : '24.500 €'}
+                    </span>
                     <span className="text-[10px] text-emerald-400 mt-1 block">↑ 12.3% vs Mes anterior</span>
                   </div>
                   <div className="glass-panel rounded-xl p-5 border-l-4 border-indigo-400">
@@ -690,84 +982,176 @@ export default function Dashboard() {
                     <span className="text-[10px] text-slate-400 mt-1 block">Objetivo de cocina: 75.0%</span>
                   </div>
                   <div className="glass-panel rounded-xl p-5 border-l-4 border-pink-400">
-                    <span className="text-xs font-semibold text-slate-400 uppercase block">Arqueos Ciegos (Desviación)</span>
-                    <span className="text-2xl font-bold text-white block mt-1">0.12 %</span>
-                    <span className="text-[10px] text-emerald-400 mt-1 block">Dentro del umbral de confianza</span>
+                    <span className="text-xs font-semibold text-slate-400 uppercase block">Último Descuadre de Caja</span>
+                    <span className={`text-2xl font-bold block mt-1 ${closingsList[0] && parseFloat(closingsList[0].discrepancy) !== 0 ? 'text-rose-400' : 'text-emerald-400'}`}>
+                      {closingsList[0] ? `${parseFloat(closingsList[0].discrepancy).toFixed(2)} €` : '0.00 €'}
+                    </span>
+                    <span className="text-[10px] text-slate-400 mt-1 block">Arqueos auditados vía RLS</span>
                   </div>
                   <div className="glass-panel rounded-xl p-5 border-l-4 border-amber-400">
                     <span className="text-xs font-semibold text-slate-400 uppercase block">Predicción Ventas (Próximo Mes)</span>
-                    <span className="text-2xl font-bold text-white block mt-1">27.800 €</span>
-                    <span className="text-[10px] text-indigo-400 mt-1 block">Confianza predictiva: 94.2%</span>
+                    <span className="text-2xl font-bold text-white block mt-1">
+                      {pnlData ? `${parseFloat(pnlData.forecastNextMonthRevenue).toLocaleString('es-ES')} €` : '27.800 €'}
+                    </span>
+                    <span className="text-[10px] text-indigo-400 mt-1 block">Intervalo Confianza: {pnlData?.confidenceInterval || '94.2%'}</span>
                   </div>
                 </div>
 
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
                   
-                  {/* P&L statement */}
-                  <div className="glass-panel rounded-2xl p-6 space-y-4">
-                    <h3 className="font-bold text-white flex items-center gap-1.5 text-sm">
-                      <TrendingUp className="h-5 w-5 text-indigo-400" /> Cuenta P&L Simplificada (Pérdidas y Ganancias)
-                    </h3>
-                    <div className="space-y-2.5 text-xs text-slate-300">
-                      <div className="flex justify-between pb-1.5 border-b border-white/5 text-slate-400 font-semibold">
-                        <span>Línea de Negocio</span>
-                        <span>Monto</span>
-                      </div>
-                      <div className="flex justify-between">
-                        <span>Ingresos Totales (Mesa + Takeaway)</span>
-                        <span className="font-mono text-emerald-400">+24.500,00 €</span>
-                      </div>
-                      <div className="flex justify-between">
-                        <span>Costes de Alimento (COGS)</span>
-                        <span className="font-mono text-red-400">-6.125,00 €</span>
-                      </div>
-                      <div className="flex justify-between">
-                        <span>Gastos de Personal (Nóminas + SS)</span>
-                        <span className="font-mono text-red-400">-9.800,00 €</span>
-                      </div>
-                      <div className="flex justify-between">
-                        <span>Gastos Operativos (Luz, Alquiler, Software)</span>
-                        <span className="font-mono text-red-400">-3.200,00 €</span>
-                      </div>
-                      <div className="flex justify-between pt-2 border-t border-white/10 font-bold text-sm text-white">
-                        <span>Resultado Neto Operativo (Profit)</span>
-                        <span className="font-mono">+5.375,00 €</span>
+                  {/* Left Column: P&L Statement & Escandallos */}
+                  <div className="lg:col-span-2 space-y-6">
+                    
+                    {/* P&L Statement */}
+                    <div className="glass-panel rounded-2xl p-6 space-y-4">
+                      <h3 className="font-bold text-white flex items-center gap-1.5 text-sm">
+                        <TrendingUp className="h-5 w-5 text-indigo-400" /> Cuenta P&L Simplificada (Pérdidas y Ganancias del Mes)
+                      </h3>
+                      <div className="space-y-2.5 text-xs text-slate-300">
+                        <div className="flex justify-between pb-1.5 border-b border-white/5 text-slate-400 font-semibold">
+                          <span>Línea de Negocio</span>
+                          <span>Monto</span>
+                        </div>
+                        <div className="flex justify-between">
+                          <span>Ingresos Totales (Mesa + Takeaway)</span>
+                          <span className="font-mono text-emerald-400">
+                            +{pnlData ? parseFloat(pnlData.totalRevenue).toLocaleString('es-ES', { minimumFractionDigits: 2 }) : '24.500,00'} €
+                          </span>
+                        </div>
+                        <div className="flex justify-between">
+                          <span>Costes de Alimento (COGS - Food Cost)</span>
+                          <span className="font-mono text-red-400">
+                            -{pnlData ? parseFloat(pnlData.foodCost).toLocaleString('es-ES', { minimumFractionDigits: 2 }) : '6.125,00'} €
+                          </span>
+                        </div>
+                        <div className="flex justify-between">
+                          <span>Gastos de Personal (Nóminas + SS)</span>
+                          <span className="font-mono text-red-400">
+                            -{pnlData ? parseFloat(pnlData.laborCost).toLocaleString('es-ES', { minimumFractionDigits: 2 }) : '9.800,00'} €
+                          </span>
+                        </div>
+                        <div className="flex justify-between">
+                          <span>Gastos Operativos (Alquiler, Suministros, Software)</span>
+                          <span className="font-mono text-red-400">
+                            -{pnlData ? parseFloat(pnlData.otherExpenses).toLocaleString('es-ES', { minimumFractionDigits: 2 }) : '3.200,00'} €
+                          </span>
+                        </div>
+                        <div className="flex justify-between pt-2 border-t border-white/10 font-bold text-sm text-white">
+                          <span>Resultado Neto Operativo (Profit)</span>
+                          <span className="font-mono text-emerald-400">
+                            +{pnlData ? parseFloat(pnlData.netProfit).toLocaleString('es-ES', { minimumFractionDigits: 2 }) : '5.375,00'} €
+                          </span>
+                        </div>
                       </div>
                     </div>
+
+                    {/* Escandallos list */}
+                    <div className="glass-panel rounded-2xl p-6 space-y-4">
+                      <h3 className="font-bold text-white flex items-center gap-1.5 text-sm">
+                        <Coins className="h-5 w-5 text-indigo-400" /> Fichas de Escandallo (Costes e Ingredientes)
+                      </h3>
+                      <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
+                        {escandallosList.map((item: any, idx: number) => (
+                          <div key={idx} className="p-4 rounded-xl bg-slate-900/60 border border-white/5 flex flex-col justify-between gap-3">
+                            <div>
+                              <span className="font-bold text-white block text-xs">{item.recipeName}</span>
+                              <span className="text-[10px] text-slate-400 mt-1 block">Coste Proveedor: {item.supplierCost.toFixed(2)}€</span>
+                              <span className="text-[10px] text-slate-400 block">PVP Carta: {item.menuPrice.toFixed(2)}€</span>
+                            </div>
+                            <div className="flex justify-between items-center pt-2 border-t border-white/5">
+                              <span className="text-[9px] uppercase font-bold text-slate-500">Margen Bruto</span>
+                              <span className="font-mono bg-emerald-500/10 text-emerald-400 px-2 py-0.5 rounded text-[10px] font-bold">
+                                {item.marginPercent}%
+                              </span>
+                            </div>
+                          </div>
+                        ))}
+                      </div>
+                    </div>
+
                   </div>
 
-                  {/* Escandallos list */}
-                  <div className="glass-panel rounded-2xl p-6 space-y-4">
-                    <h3 className="font-bold text-white flex items-center gap-1.5 text-sm">
-                      <Coins className="h-5 w-5 text-indigo-400" /> Fichas de Escandallo (Costo vs Proveedor)
-                    </h3>
-                    <div className="space-y-3">
-                      
-                      <div className="p-3 rounded bg-slate-900/60 border border-white/5 flex justify-between items-center text-xs">
+                  {/* Right Column: Blind Register Closings Form & History */}
+                  <div className="space-y-6">
+                    
+                    {/* Arqueo Form */}
+                    <div className="glass-panel rounded-2xl p-6 space-y-4">
+                      <h3 className="text-sm font-bold text-white flex items-center gap-1.5">
+                        <Coins className="h-4 w-4 text-purple-400" /> Arqueo de Caja Ciego
+                      </h3>
+                      <p className="text-xs text-slate-400 leading-normal">
+                        Introduce el total de efectivo contado físicamente en caja. El sistema calculará el descuadre comparándolo automáticamente con las ventas del día registradas vía RLS.
+                      </p>
+                      <form onSubmit={handleRegisterClosingSubmit} className="space-y-3">
                         <div>
-                          <span className="font-bold text-white block">Solomillo al Whisky</span>
-                          <span className="text-[10px] text-slate-400">Costo Proveedor: 4.20€ • Venta: 14.50€</span>
+                          <label className="text-[10px] text-slate-400 block mb-1 font-semibold uppercase">Efectivo Físico Contado (€)</label>
+                          <div className="relative">
+                            <input 
+                              type="number"
+                              step="0.01"
+                              required
+                              placeholder="Ej. 1450.25"
+                              value={actualAmountInput}
+                              onChange={(e) => setActualAmountInput(e.target.value)}
+                              className="w-full text-xs bg-slate-950/80 border border-white/10 text-white rounded-lg p-2.5 pr-8 focus:outline-none focus:border-purple-500"
+                            />
+                            <span className="absolute right-3 top-2.5 text-xs text-slate-500">€</span>
+                          </div>
                         </div>
-                        <span className="font-mono bg-emerald-500/10 text-emerald-400 px-2 py-0.5 rounded font-bold">Margen: 71.0%</span>
-                      </div>
-
-                      <div className="p-3 rounded bg-slate-900/60 border border-white/5 flex justify-between items-center text-xs">
-                        <div>
-                          <span className="font-bold text-white block">Patatas Bravas</span>
-                          <span className="text-[10px] text-slate-400">Costo Proveedor: 0.80€ • Venta: 6.50€</span>
-                        </div>
-                        <span className="font-mono bg-emerald-500/10 text-emerald-400 px-2 py-0.5 rounded font-bold">Margen: 87.7%</span>
-                      </div>
-
-                      <div className="p-3 rounded bg-slate-900/60 border border-white/5 flex justify-between items-center text-xs">
-                        <div>
-                          <span className="font-bold text-white block">Hamburguesa Gourmet</span>
-                          <span className="text-[10px] text-slate-400">Costo Proveedor: 3.50€ • Venta: 14.00€</span>
-                        </div>
-                        <span className="font-mono bg-emerald-500/10 text-emerald-400 px-2 py-0.5 rounded font-bold">Margen: 75.0%</span>
-                      </div>
-
+                        <button 
+                          type="submit"
+                          disabled={updating}
+                          className="w-full bg-purple-600 hover:bg-purple-500 text-white text-xs font-bold py-2.5 rounded-lg transition disabled:opacity-50"
+                        >
+                          {updating ? 'Procesando...' : 'Cerrar Caja (Arqueo)'}
+                        </button>
+                      </form>
                     </div>
+
+                    {/* Historical Closings List */}
+                    <div className="glass-panel rounded-2xl p-6 space-y-4">
+                      <h3 className="text-sm font-bold text-white flex items-center gap-1.5">
+                        <History className="h-4 w-4 text-purple-400" /> Historial de Cierres (Auditoría)
+                      </h3>
+                      <div className="space-y-3 max-h-[220px] overflow-y-auto pr-1">
+                        {closingsList.length === 0 ? (
+                          <p className="text-xs text-slate-500 text-center py-4">No hay cierres registrados hoy.</p>
+                        ) : (
+                          closingsList.map((closing: any) => {
+                            const dateStr = new Date(closing.createdAt).toLocaleDateString([], { day: '2-digit', month: '2-digit' });
+                            const timeStr = new Date(closing.createdAt).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
+                            const disc = parseFloat(closing.discrepancy);
+                            return (
+                              <div key={closing.id} className="p-3 bg-slate-950/60 border border-white/5 rounded-xl text-xs space-y-1.5">
+                                <div className="flex justify-between items-center text-[10px] text-slate-500">
+                                  <span>{dateStr} a las {timeStr}</span>
+                                  <span className={`px-1.5 py-0.5 rounded text-[9px] font-bold ${disc === 0 ? 'bg-emerald-500/10 text-emerald-400' : 'bg-rose-500/10 text-rose-400'}`}>
+                                    {disc === 0 ? 'Cuadrado' : 'Descuadre'}
+                                  </span>
+                                </div>
+                                <div className="grid grid-cols-3 gap-1 text-center pt-1 text-[11px]">
+                                  <div>
+                                    <span className="text-[10px] text-slate-500 block">Contado</span>
+                                    <span className="font-semibold text-white">{parseFloat(closing.actualAmount).toFixed(2)}€</span>
+                                  </div>
+                                  <div>
+                                    <span className="text-[10px] text-slate-500 block">Esperado</span>
+                                    <span className="font-semibold text-slate-300">{parseFloat(closing.expectedAmount).toFixed(2)}€</span>
+                                  </div>
+                                  <div>
+                                    <span className="text-[10px] text-slate-500 block">Desviación</span>
+                                    <span className={`font-mono font-bold ${disc > 0 ? 'text-emerald-400' : disc < 0 ? 'text-rose-400' : 'text-slate-400'}`}>
+                                      {disc > 0 ? '+' : ''}{disc.toFixed(2)}€
+                                    </span>
+                                  </div>
+                                </div>
+                              </div>
+                            );
+                          })
+                        )}
+                      </div>
+                    </div>
+
                   </div>
 
                 </div>

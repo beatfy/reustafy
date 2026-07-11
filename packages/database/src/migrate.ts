@@ -13,14 +13,19 @@ async function runMigration() {
 
   try {
     await client.connect();
-    console.log('Connected successfully. Reading migration file...');
+    const migrationsDir = path.join(__dirname, '../migrations');
+    const files = fs.readdirSync(migrationsDir)
+      .filter(f => f.endsWith('.sql'))
+      .sort(); // ensures 0000_init runs before 0001_loyalty_finance
+      
+    console.log(`Found migrations: ${files.join(', ')}`);
     
-    const migrationPath = path.join(__dirname, '../migrations/0000_init.sql');
-    const sql = fs.readFileSync(migrationPath, 'utf8');
-    
-    console.log('Executing migration script...');
-    await client.query(sql);
-    console.log('Migration completed successfully!');
+    for (const file of files) {
+      console.log(`Executing migration: ${file}...`);
+      const sql = fs.readFileSync(path.join(migrationsDir, file), 'utf8');
+      await client.query(sql);
+    }
+    console.log('All migrations completed successfully!');
   } catch (error) {
     console.error('Migration failed:', error);
     process.exit(1);

@@ -1,33 +1,61 @@
 import { FastifyInstance } from 'fastify';
+import { runInTenantContext, orders, registerClosings, activityLogs } from '@reustafy/database';
+import { eq, and, gte, desc } from 'drizzle-orm';
 import { authenticateJWT } from '../middleware/auth';
 import { requireTier } from '../middleware/subscription';
 
 export async function financeRoutes(fastify: FastifyInstance) {
   
   fastify.addHook('preHandler', authenticateJWT);
-  
-  // This module requires premium tier
-  fastify.addHook('preHandler', requireTier('premium'));
+  fastify.addHook('preHandler', requireTier('premium')); // Premium tier requirement
 
-  // Get financial report (Premium feature)
+  // 1. Get financial report (P&L)
   fastify.get('/pnl', async (req, reply) => {
-    return {
-      message: 'Arqueo de caja y P&L cargados correctamente.',
-      tenantId: req.userSession!.tenantId,
-      subscriptionTier: req.userSession!.subscriptionTier,
-      data: {
-        totalRevenue: 24500.00,
-        foodCost: 6125.00,
-        laborCost: 9800.00,
-        otherExpenses: 3200.00,
-        netProfit: 5375.00,
-        forecastNextMonthRevenue: 27800.00,
-        confidenceInterval: '94.2%'
-      }
-    };
+    const tenantId = req.userSession!.tenantId;
+
+    try {
+      const reports = await runInTenantContext(tenantId, async (tx: any) => {
+        // Query today's revenue to dynamically adjust P&L
+        const today = new Date();
+        today.setHours(0,0,0,0);
+        const todayOrders = await tx
+          .select({ totalAmount: orders.totalAmount })
+          .from(orders)
+          .where(and(eq(orders.status, 'paid'), gte(orders.updatedAt, today)));
+
+        const todayRevenue = todayOrders.reduce((acc: number, o: any) => acc + parseFloat(o.totalAmount), 0);
+        
+        // Base monthly P&L
+        const baseRevenue = 24500.00 + todayRevenue;
+        const foodCost = baseRevenue * 0.25; // 25% cost
+        const laborCost = 9800.00;
+        const otherExpenses = 3200.00;
+        const netProfit = baseRevenue - foodCost - laborCost - otherExpenses;
+
+        return {
+          totalRevenue: baseRevenue.toFixed(2),
+          foodCost: foodCost.toFixed(2),
+          laborCost: laborCost.toFixed(2),
+          otherExpenses: otherExpenses.toFixed(2),
+          netProfit: netProfit.toFixed(2),
+          forecastNextMonthRevenue: (baseRevenue * 1.1).toFixed(2),
+          confidenceInterval: '94.2%'
+        };
+      });
+
+      return {
+        message: 'Arqueo de caja y P&L cargados correctamente.',
+        tenantId,
+        subscriptionTier: req.userSession!.subscriptionTier,
+        data: reports
+      };
+    } catch (error) {
+      fastify.log.error(error);
+      return reply.code(500).send({ error: 'Failed to compute P&L metrics' });
+    }
   });
 
-  // Get recipe costing / escandallos (Premium feature)
+  // 2. Get recipe costing (Escandallos)
   fastify.get('/costing', async (req, reply) => {
     return {
       message: 'Coste de recetas (Escandallos) cargado.',
@@ -37,5 +65,86 @@ export async function financeRoutes(fastify: FastifyInstance) {
         { recipeName: 'Hamburguesa Gourmet', supplierCost: 3.50, menuPrice: 14.00, marginPercent: 75.0 }
       ]
     };
+  });
+
+  // 3. Submit a Blind Register Closing (Arqueo de caja ciego)
+  fastify.post('/closings', async (req, reply) => {
+    const tenantId = req.userSession!.tenantId;
+    const userId = req.userSession!.userId;
+    const { actualAmount } = req.body as { actualAmount: number };
+
+    if (actualAmount === undefined || actualAmount < 0) {
+      return reply.code(400).send({ error: 'actualAmount is required and must be positive' });
+    }
+
+    try {
+      const closing = await runInTenantContext(tenantId, async (tx: any) => {
+        // Find total paid orders today
+        const today = new Date();
+        today.setHours(0,0,0,0);
+
+        const paidOrders = await tx
+          .select({
+            totalAmount: orders.totalAmount
+          })
+          .from(orders)
+          .where(
+            and(
+              eq(orders.status, 'paid'),
+              gte(orders.updatedAt, today)
+            )
+          );
+
+        // Calculate expected sum
+        const expected = paidOrders.reduce((acc: number, order: any) => acc + parseFloat(order.totalAmount), 0);
+        const discrepancy = actualAmount - expected;
+
+        // Insert Register Closing
+        const [inserted] = await tx
+          .insert(registerClosings)
+          .values({
+            tenantId,
+            userId,
+            expectedAmount: expected.toFixed(2),
+            actualAmount: actualAmount.toFixed(2),
+            discrepancy: discrepancy.toFixed(2)
+          })
+          .returning();
+
+        // Create log
+        const descText = `Arqueo de caja ciego realizado. Efectivo contado: ${actualAmount.toFixed(2)}€, Esperado: ${expected.toFixed(2)}€, Descuadre: ${discrepancy.toFixed(2)}€`;
+        await tx.insert(activityLogs).values({
+          tenantId,
+          userId,
+          actionDescription: descText
+        });
+
+        return inserted;
+      });
+
+      return reply.code(201).send(closing);
+    } catch (error) {
+      fastify.log.error(error);
+      return reply.code(500).send({ error: 'Failed to record register closing' });
+    }
+  });
+
+  // 4. Get recent Register Closings
+  fastify.get('/closings', async (req, reply) => {
+    const tenantId = req.userSession!.tenantId;
+
+    try {
+      const history = await runInTenantContext(tenantId, async (tx: any) => {
+        return await tx
+          .select()
+          .from(registerClosings)
+          .orderBy(desc(registerClosings.createdAt))
+          .limit(20);
+      });
+      return history;
+    } catch (error) {
+      fastify.log.error(error);
+      return reply.code(500).send({ error: 'Failed to retrieve closings history' });
+    }
   });
 }
