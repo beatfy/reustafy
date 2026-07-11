@@ -27,6 +27,8 @@ export default function KitchenKDS() {
   const [apiUrl, setApiUrl] = useState('');
   
   const [ordersList, setOrdersList] = useState<Order[]>([]);
+  const [tablesList, setTablesList] = useState<any[]>([]);
+  const [reservationsList, setReservationsList] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
   const [updatingId, setUpdatingId] = useState<string | null>(null);
 
@@ -50,12 +52,31 @@ export default function KitchenKDS() {
   const fetchKDSOrders = async (activeToken: string) => {
     setLoading(true);
     try {
+      // 1. Fetch KDS orders
       const res = await fetch(`${apiUrl}/api/orders/kds`, {
         headers: { Authorization: `Bearer ${activeToken}` }
       });
       if (!res.ok) throw new Error('Error fetching KDS orders');
       const data = await res.json();
       setOrdersList(data);
+
+      // 2. Fetch Tables to match table IDs
+      const tablesRes = await fetch(`${apiUrl}/api/tables`, {
+        headers: { Authorization: `Bearer ${activeToken}` }
+      });
+      if (tablesRes.ok) {
+        const tablesData = await tablesRes.json();
+        setTablesList(tablesData);
+      }
+
+      // 3. Fetch Reservations to read allergies
+      const resRes = await fetch(`${apiUrl}/api/reservations`, {
+        headers: { Authorization: `Bearer ${activeToken}` }
+      });
+      if (resRes.ok) {
+        const resData = await resRes.json();
+        setReservationsList(resData);
+      }
     } catch (err) {
       console.error(err);
     } finally {
@@ -183,6 +204,20 @@ export default function KitchenKDS() {
                         </span>
                       </div>
                     </div>
+
+                    {/* Display allergies warnings for Kitchen staff */}
+                    {(() => {
+                      const table = tablesList.find(t => t.tableNumber === order.tableNumber);
+                      const tableRes = table ? reservationsList.find(r => r.tableId === table.id && r.status !== 'cancelled') : null;
+                      if (tableRes?.allergies) {
+                        return (
+                          <div className="mt-2 p-2 bg-rose-500/10 border border-rose-500/30 rounded-lg text-rose-300 text-[10px] font-bold flex items-center gap-1.5 animate-pulse">
+                            <span>⚠️ ALERGIA: {tableRes.allergies}</span>
+                          </div>
+                        );
+                      }
+                      return null;
+                    })()}
 
                     {/* Order Items list */}
                     <div className="py-4 space-y-3">

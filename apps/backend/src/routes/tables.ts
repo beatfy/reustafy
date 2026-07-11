@@ -1,6 +1,6 @@
 import { FastifyInstance } from 'fastify';
-import { runInTenantContext, tables, activityLogs } from '@reustafy/database';
-import { eq } from 'drizzle-orm';
+import { runInTenantContext, tables, activityLogs, orders } from '@reustafy/database';
+import { eq, and, ne } from 'drizzle-orm';
 import { authenticateJWT } from '../middleware/auth';
 
 export async function tableRoutes(fastify: FastifyInstance) {
@@ -62,6 +62,68 @@ export async function tableRoutes(fastify: FastifyInstance) {
     } catch (error: any) {
       fastify.log.error(error);
       return reply.code(500).send({ error: error.message || 'Failed to update table status' });
+    }
+  });
+
+  // Settle bill / checkout a table
+  fastify.post('/tables/:id/checkout', async (req, reply) => {
+    const tenantId = req.userSession!.tenantId;
+    const userId = req.userSession!.userId;
+    const { id } = req.params as { id: string };
+    const { orderType } = req.body as { orderType?: 'dine_in' | 'takeaway' };
+
+    try {
+      const result = await runInTenantContext(tenantId, async (tx: any) => {
+        // 1. Get the table details to know the table number
+        const [table] = await tx
+          .select()
+          .from(tables)
+          .where(eq(tables.id, id));
+
+        if (!table) {
+          throw new Error('Table not found');
+        }
+
+        // 2. Settle all orders for this table where status != 'paid'
+        const updatedOrders = await tx
+          .update(orders)
+          .set({ status: 'paid', updatedAt: new Date() })
+          .where(
+            and(
+              eq(orders.tableId, id),
+              ne(orders.status, 'paid')
+            )
+          )
+          .returning();
+
+        // 3. Reset the table status to 'free'
+        await tx
+          .update(tables)
+          .set({ status: 'free' })
+          .where(eq(tables.id, id));
+
+        const totalSettled = updatedOrders.reduce((acc: number, o: any) => acc + parseFloat(o.totalAmount), 0);
+
+        // 4. Log the action
+        await tx.insert(activityLogs).values({
+          tenantId,
+          userId,
+          actionDescription: `Mesa ${table.tableNumber} cobrada y liberada. Total cobrado: ${totalSettled.toFixed(2)}€ (${orderType === 'takeaway' ? 'Para llevar' : 'Servicio en local'})`
+        });
+
+        return {
+          success: true,
+          tableId: id,
+          tableNumber: table.tableNumber,
+          totalSettled: totalSettled.toFixed(2),
+          ordersCount: updatedOrders.length
+        };
+      });
+
+      return result;
+    } catch (error: any) {
+      fastify.log.error(error);
+      return reply.code(500).send({ error: error.message || 'Failed to checkout table' });
     }
   });
 }

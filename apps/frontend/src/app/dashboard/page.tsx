@@ -40,6 +40,7 @@ interface Reservation {
   reservationTime: string;
   tableId: string | null;
   status: 'pending' | 'confirmed' | 'cancelled' | 'seated';
+  allergies?: string | null;
 }
 
 interface ActivityLog {
@@ -62,6 +63,7 @@ export default function Dashboard() {
   const [tablesList, setTablesList] = useState<Table[]>([]);
   const [reservationsList, setReservationsList] = useState<Reservation[]>([]);
   const [logsList, setLogsList] = useState<ActivityLog[]>([]);
+  const [ordersList, setOrdersList] = useState<any[]>([]);
   
   // UI states
   const [activeTab, setActiveTab] = useState<'operations' | 'marketing' | 'finance'>('operations');
@@ -84,6 +86,10 @@ export default function Dashboard() {
   const [closingsList, setClosingsList] = useState<any[]>([]);
   const [escandallosList, setEscandallosList] = useState<any[]>([]);
   const [actualAmountInput, setActualAmountInput] = useState('');
+  const [orderType, setOrderType] = useState<'dine_in' | 'takeaway'>('dine_in');
+  const [billingMode, setBillingMode] = useState<'full' | 'equal' | 'itemized'>('full');
+  const [splitCountInput, setSplitCountInput] = useState('2');
+  const [paidItemIds, setPaidItemIds] = useState<string[]>([]);
 
   // Loading & Error states
   const [loading, setLoading] = useState(true);
@@ -125,13 +131,22 @@ export default function Dashboard() {
       const tablesData = await tablesRes.json();
       setTablesList(tablesData);
 
-      // 2. Fetch reservations
-      const resRes = await fetch(`${apiUrl}/api/reservations`, {
-        headers: { Authorization: `Bearer ${activeToken}` }
-      });
-      if (!resRes.ok) throw new Error('Error al cargar reservas');
-      const resData = await resRes.json();
-      setReservationsList(resData);
+       // 2. Fetch reservations
+       const resRes = await fetch(`${apiUrl}/api/reservations`, {
+         headers: { Authorization: `Bearer ${activeToken}` }
+       });
+       if (!resRes.ok) throw new Error('Error al cargar reservas');
+       const resData = await resRes.json();
+       setReservationsList(resData);
+ 
+       // Fetch orders
+       const ordersRes = await fetch(`${apiUrl}/api/orders`, {
+         headers: { Authorization: `Bearer ${activeToken}` }
+       });
+       if (ordersRes.ok) {
+         const ordersData = await ordersRes.json();
+         setOrdersList(ordersData);
+       }
 
       // 3. Fetch activity logs
       const logsRes = await fetch(`${apiUrl}/api/logs`, {
@@ -321,6 +336,32 @@ export default function Dashboard() {
       
       await fetchData();
       alert('Arqueo registrado y descuadre guardado en el historial.');
+    } catch (err: any) {
+      alert(err.message);
+    } finally {
+      setUpdating(false);
+    }
+  };
+
+  // Checkout table / Settle bill
+  const handleCheckoutTable = async (tableId: string, orderType: 'dine_in' | 'takeaway') => {
+    setUpdating(true);
+    try {
+      const res = await fetch(`${apiUrl}/api/tables/${tableId}/checkout`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          Authorization: `Bearer ${token}`
+        },
+        body: JSON.stringify({ orderType })
+      });
+
+      if (!res.ok) throw new Error('Error al cobrar mesa');
+      const result = await res.json();
+      
+      setSelectedTable(null);
+      await fetchData();
+      alert(`Mesa cobrada con éxito. Total cobrado: ${result.totalSettled}€`);
     } catch (err: any) {
       alert(err.message);
     } finally {
@@ -587,6 +628,279 @@ export default function Dashboard() {
                 </div>
               )}
 
+              {/* Settle Bill & Split Payment Section if a Table is Selected */}
+              {selectedTable && (
+                <div className="mt-4 p-6 rounded-2xl bg-slate-900/60 border border-white/5 backdrop-blur-md space-y-6">
+                  <div>
+                    <h3 className="font-bold text-white flex items-center gap-1.5 text-sm">
+                      <Coins className="h-4.5 w-4.5 text-indigo-400" /> Cuenta y Facturación - Mesa {selectedTable.tableNumber}
+                    </h3>
+                    <p className="text-[11px] text-slate-400 mt-0.5">Saca la cuenta completa, divídela por clientes o cobra por plato con impuestos españoles calculados.</p>
+                  </div>
+
+                  {(() => {
+                    const tableOrders = ordersList.filter(o => o.tableId === selectedTable.id && o.status !== 'paid');
+                    if (tableOrders.length === 0) {
+                      return (
+                        <div className="text-xs text-slate-500 text-center py-4">
+                          No hay consumiciones activas registradas en esta mesa.
+                        </div>
+                      );
+                    }
+
+                    const allItems = tableOrders.flatMap(o => (o.items || []).map((item: any) => ({
+                      ...item,
+                      orderId: o.id
+                    })));
+
+                    if (allItems.length === 0) {
+                      return (
+                        <div className="text-xs text-slate-500 text-center py-4">
+                          Comanda vacía (sin platos registrados).
+                        </div>
+                      );
+                    }
+
+                    // Alcohol Classifier
+                    const isAlcohol = (name: string) => /vino|cerveza|copa|whisky|caña|sangria|tinto|ron|ginebra|vodka|sidra|alcohol/i.test(name);
+
+                    // Calculations
+                    const totalInclTax = allItems.reduce((acc, item) => acc + (parseFloat(item.price) * item.quantity), 0);
+                    
+                    let base10Total = 0;
+                    let base21Total = 0;
+                    let iva10Amount = 0;
+                    let iva21Amount = 0;
+
+                    allItems.forEach(item => {
+                      const itemPrice = parseFloat(item.price) * item.quantity;
+                      if (orderType === 'takeaway' && isAlcohol(item.itemName)) {
+                        base21Total += itemPrice / 1.21;
+                        iva21Amount += (itemPrice / 1.21) * 0.21;
+                      } else {
+                        base10Total += itemPrice / 1.10;
+                        iva10Amount += (itemPrice / 1.10) * 0.10;
+                      }
+                    });
+
+                    const netSubtotal = base10Total + base21Total;
+                    const totalIVA = iva10Amount + iva21Amount;
+
+                    // Equal split
+                    const splitCount = parseInt(splitCountInput) || 2;
+                    const splitAmount = totalInclTax / splitCount;
+
+                    // Itemized split calculation
+                    const selectedItemsTotal = paidItemIds.reduce((acc, itemId) => {
+                      const item = allItems.find(i => i.id === itemId);
+                      if (item) return acc + (parseFloat(item.price) * item.quantity);
+                      return acc;
+                    }, 0);
+                    const remainingTotal = totalInclTax - selectedItemsTotal;
+
+                    return (
+                      <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+                        
+                        {/* Column 1: Order Details */}
+                        <div className="space-y-4">
+                          <span className="text-[10px] text-slate-400 uppercase font-bold block">Consumición Actual</span>
+                          <div className="space-y-2 max-h-[220px] overflow-y-auto pr-1">
+                            {allItems.map((item: any) => {
+                              const isAlc = isAlcohol(item.itemName);
+                              const isChecked = paidItemIds.includes(item.id);
+                              return (
+                                <div 
+                                  key={item.id} 
+                                  onClick={() => {
+                                    if (billingMode === 'itemized') {
+                                      setPaidItemIds(prev => 
+                                        prev.includes(item.id) ? prev.filter(id => id !== item.id) : [...prev, item.id]
+                                      );
+                                    }
+                                  }}
+                                  className={`p-2.5 rounded-lg border text-xs flex justify-between items-center transition cursor-pointer ${
+                                    billingMode === 'itemized' 
+                                      ? isChecked 
+                                        ? 'bg-indigo-600/20 border-indigo-500' 
+                                        : 'bg-slate-950/60 border-white/5 hover:bg-slate-900/60'
+                                      : 'bg-slate-950/40 border-white/5 cursor-default'
+                                  }`}
+                                >
+                                  <div>
+                                    <div className="flex items-center gap-1.5 font-bold text-white">
+                                      {billingMode === 'itemized' && (
+                                        <input 
+                                          type="checkbox" 
+                                          checked={isChecked} 
+                                          onChange={() => {}} // handled by div onClick
+                                          className="rounded border-white/10 text-indigo-600 focus:ring-0 mr-1" 
+                                        />
+                                      )}
+                                      <span>{item.itemName}</span>
+                                    </div>
+                                    <span className="text-[10px] text-slate-400 mt-0.5 block">
+                                      Cant: {item.quantity} • Unit: {parseFloat(item.price).toFixed(2)}€
+                                      {isAlc && (
+                                        <span className="ml-1 bg-amber-500/10 text-amber-400 px-1 rounded text-[8px] font-bold">
+                                          Alcohol
+                                        </span>
+                                      )}
+                                    </span>
+                                  </div>
+                                  <span className="font-mono text-white">{(parseFloat(item.price) * item.quantity).toFixed(2)}€</span>
+                                </div>
+                              );
+                            })}
+                          </div>
+                        </div>
+
+                        {/* Column 2: Billing mode and Calculator */}
+                        <div className="space-y-4">
+                          <span className="text-[10px] text-slate-400 uppercase font-bold block">Método de Pago</span>
+                          
+                          <div className="grid grid-cols-3 gap-2">
+                            {(['full', 'equal', 'itemized'] as const).map((mode) => (
+                              <button
+                                key={mode}
+                                onClick={() => {
+                                  setBillingMode(mode);
+                                  setPaidItemIds([]);
+                                }}
+                                className={`text-[10px] font-bold py-2 rounded-lg border transition ${
+                                  billingMode === mode 
+                                    ? 'bg-indigo-600 border-indigo-500 text-white' 
+                                    : 'bg-slate-950/80 text-slate-400 border-white/5 hover:bg-slate-900'
+                                }`}
+                              >
+                                {mode === 'full' ? '100% Caja' : mode === 'equal' ? 'Dividir' : 'Por Cliente'}
+                              </button>
+                            ))}
+                          </div>
+
+                          {billingMode === 'equal' && (
+                            <div className="p-3 bg-slate-950 rounded-xl space-y-3">
+                              <div>
+                                <label className="text-[10px] text-slate-400 block mb-1 font-semibold uppercase">Número de Comensales</label>
+                                <input 
+                                  type="number"
+                                  min="2"
+                                  max="30"
+                                  value={splitCountInput}
+                                  onChange={(e) => setSplitCountInput(e.target.value)}
+                                  className="w-full text-xs bg-slate-900 border border-white/10 text-white rounded px-2 py-1.5 focus:outline-none focus:border-indigo-500"
+                                />
+                              </div>
+                              <div className="text-center py-2 border-t border-white/5">
+                                <span className="text-xs text-slate-400 block">Toca pagar a cada cliente:</span>
+                                <span className="text-xl font-bold text-indigo-400 block mt-1 font-mono">
+                                  {splitAmount.toFixed(2)} €
+                                </span>
+                              </div>
+                            </div>
+                          )}
+
+                          {billingMode === 'itemized' && (
+                            <div className="p-3 bg-slate-950 rounded-xl space-y-2.5 text-xs text-slate-300">
+                              <span className="text-[10px] text-slate-500 block leading-normal">
+                                Selecciona los platos del panel de la izquierda que corresponden al cliente que va a pagar ahora.
+                              </span>
+                              <div className="flex justify-between border-b border-white/5 pb-1.5 mt-2">
+                                <span>Total Cliente Actual:</span>
+                                <span className="font-mono text-emerald-400 font-bold">{selectedItemsTotal.toFixed(2)} €</span>
+                              </div>
+                              <div className="flex justify-between text-slate-400">
+                                <span>Restante en Mesa:</span>
+                                <span className="font-mono">{remainingTotal.toFixed(2)} €</span>
+                              </div>
+                            </div>
+                          )}
+
+                          {billingMode === 'full' && (
+                            <div className="p-3 bg-slate-950 rounded-xl text-center py-6 text-xs text-slate-400">
+                              Se emitirá la factura simplificada por el 100% de la consumición de la mesa.
+                            </div>
+                          )}
+
+                          <div className="p-3 bg-slate-950 rounded-xl space-y-2">
+                            <label className="text-[10px] text-slate-400 block font-semibold uppercase">Tipo de Servicio (Impuestos)</label>
+                            <div className="grid grid-cols-2 gap-2 mt-1">
+                              <button
+                                onClick={() => setOrderType('dine_in')}
+                                className={`text-[10px] py-1.5 rounded font-bold border transition ${
+                                  orderType === 'dine_in' 
+                                    ? 'bg-slate-800 border-indigo-400 text-white' 
+                                    : 'bg-transparent text-slate-500 border-white/5'
+                                }`}
+                              >
+                                Consumo en Mesa (10% IVA)
+                              </button>
+                              <button
+                                onClick={() => setOrderType('takeaway')}
+                                className={`text-[10px] py-1.5 rounded font-bold border transition ${
+                                  orderType === 'takeaway' 
+                                    ? 'bg-slate-800 border-indigo-400 text-white' 
+                                    : 'bg-transparent text-slate-500 border-white/5'
+                                }`}
+                              >
+                                Para Llevar (21% IVA Alcohol)
+                              </button>
+                            </div>
+                          </div>
+
+                        </div>
+
+                        {/* Column 3: Spanish VAT Breakdown & Submit */}
+                        <div className="space-y-4 flex flex-col justify-between">
+                          <div className="space-y-3">
+                            <span className="text-[10px] text-slate-400 uppercase font-bold block">Resumen Impositivo (IVA España)</span>
+                            
+                            <div className="p-3 bg-slate-950 rounded-xl space-y-2 text-xs text-slate-400 font-mono">
+                              <div className="flex justify-between">
+                                <span>Base Imponible:</span>
+                                <span>{netSubtotal.toFixed(2)} €</span>
+                              </div>
+                              <div className="flex justify-between text-slate-500">
+                                <span>Cuota IVA 10%:</span>
+                                <span>{iva10Amount.toFixed(2)} €</span>
+                              </div>
+                              {iva21Amount > 0 && (
+                                <div className="flex justify-between text-slate-500">
+                                  <span>Cuota IVA 21%:</span>
+                                  <span>{iva21Amount.toFixed(2)} €</span>
+                                </div>
+                              )}
+                              <div className="flex justify-between border-t border-white/5 pt-2 text-slate-300">
+                                <span>Suma Impuestos (IVA):</span>
+                                <span>{totalIVA.toFixed(2)} €</span>
+                              </div>
+                              <div className="flex justify-between pt-1 font-bold text-sm text-white">
+                                <span>TOTAL FACTURA:</span>
+                                <span>{totalInclTax.toFixed(2)} €</span>
+                              </div>
+                            </div>
+                          </div>
+
+                          <div className="space-y-2">
+                            <button
+                              onClick={() => handleCheckoutTable(selectedTable.id, orderType)}
+                              disabled={updating}
+                              className="w-full bg-indigo-600 hover:bg-indigo-500 text-white text-xs font-bold py-3 rounded-lg transition disabled:opacity-50 flex items-center justify-center gap-1.5"
+                            >
+                              <Coins className="h-4 w-4" /> 
+                              {billingMode === 'itemized' && selectedItemsTotal > 0
+                                ? `Cobrar Cliente actual (${selectedItemsTotal.toFixed(2)}€)`
+                                : `Cobrar Mesa Completa (${totalInclTax.toFixed(2)}€)`
+                              }
+                            </button>
+                          </div>
+                        </div>
+
+                      </div>
+                    );
+                  })()}
+                </div>
+              )}
+
             </section>
 
             {/* RIGHT PANEL: RESERVATIONS & LOGS (col-span-4) */}
@@ -616,6 +930,11 @@ export default function Dashboard() {
                             <span className="text-[10px] text-indigo-300 flex items-center gap-1 mt-0.5">
                               <Clock className="h-3 w-3" /> {resTime} • {res.partySize} personas
                             </span>
+                            {res.allergies && (
+                              <span className="block text-[10px] text-rose-400 font-bold mt-1">
+                                ⚠️ Alergias: {res.allergies}
+                              </span>
+                            )}
                             {res.tableId ? (
                               <span className="inline-block text-[9px] uppercase font-bold text-emerald-400 mt-1">
                                 Asignada a Mesa {tablesList.find(t => t.id === res.tableId)?.tableNumber || '?' }

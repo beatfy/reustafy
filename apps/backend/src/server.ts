@@ -189,6 +189,11 @@ server.get('/public-widget', async (req, reply) => {
           <input type="text" name="customerPhone" placeholder="+34 600 000 000">
         </div>
         
+        <div class="form-group">
+          <label>Alergias o Intolerancias</label>
+          <input type="text" name="allergies" placeholder="Gluten, marisco, lactosa (O dejar vacío)">
+        </div>
+        
         <div class="form-group" style="display: flex; gap: 10px;">
           <div style="flex: 1;">
             <label>Personas</label>

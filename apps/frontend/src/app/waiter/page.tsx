@@ -19,6 +19,7 @@ export default function WaiterPWA() {
   const [apiUrl, setApiUrl] = useState('');
   
   const [tablesList, setTablesList] = useState<Table[]>([]);
+  const [reservationsList, setReservationsList] = useState<any[]>([]);
   const [selectedTable, setSelectedTable] = useState<Table | null>(null);
   const [cart, setCart] = useState<Array<{ itemName: string; quantity: number; price: number }>>([]);
   
@@ -56,12 +57,22 @@ export default function WaiterPWA() {
   const fetchTables = async (activeToken: string) => {
     setLoading(true);
     try {
+      // Fetch Tables
       const res = await fetch(`${apiUrl}/api/tables`, {
         headers: { Authorization: `Bearer ${activeToken}` }
       });
       if (!res.ok) throw new Error('Error fetching tables');
       const data = await res.json();
       setTablesList(data);
+
+      // Fetch Reservations to map allergies
+      const resRes = await fetch(`${apiUrl}/api/reservations`, {
+        headers: { Authorization: `Bearer ${activeToken}` }
+      });
+      if (resRes.ok) {
+        const resData = await resRes.json();
+        setReservationsList(resData);
+      }
     } catch (err) {
       console.error(err);
     } finally {
@@ -158,18 +169,30 @@ export default function WaiterPWA() {
               <div className="flex justify-center py-12"><RefreshCw className="h-6 w-6 animate-spin text-indigo-400" /></div>
             ) : (
               <div className="grid grid-cols-3 gap-3">
-                {tablesList.map(t => (
-                  <button
-                    key={t.id}
-                    onClick={() => { setSelectedTable(t); setSuccess(false); }}
-                    className={`p-3 rounded-xl border flex flex-col justify-between items-center h-20 transition ${
-                      t.status === 'free' ? 'bg-emerald-500/5 border-emerald-500/20 text-emerald-300 hover:bg-emerald-500/10' : 'bg-slate-900/60 border-white/5 text-slate-400 hover:bg-slate-800'
-                    }`}
-                  >
-                    <span className="text-xl font-bold">{t.tableNumber}</span>
-                    <span className="text-[9px] uppercase tracking-wider">{t.status}</span>
-                  </button>
-                ))}
+                 {tablesList.map(t => {
+                   const tableRes = reservationsList.find(r => r.tableId === t.id && r.status !== 'cancelled');
+                   const tableAllergies = tableRes?.allergies;
+                   
+                   return (
+                     <button
+                       key={t.id}
+                       onClick={() => { setSelectedTable(t); setSuccess(false); }}
+                       className={`p-3 rounded-xl border flex flex-col justify-between items-center h-20 transition relative ${
+                         t.status === 'free' ? 'bg-emerald-500/5 border-emerald-500/20 text-emerald-300 hover:bg-emerald-500/10' : 'bg-slate-900/60 border-white/5 text-slate-400 hover:bg-slate-800'
+                       }`}
+                     >
+                       {tableAllergies && (
+                         <span className="absolute -top-1.5 -right-1 text-[8px] bg-rose-600 text-white font-extrabold px-1.5 py-0.5 rounded-full animate-pulse border border-slate-950">
+                           ⚠️ ALERGIA
+                         </span>
+                       )}
+                       <span className="text-xl font-bold">{t.tableNumber}</span>
+                       <span className="text-[9px] uppercase tracking-wider truncate max-w-full">
+                         {t.status}
+                       </span>
+                     </button>
+                   );
+                 })}
               </div>
             )}
           </div>
@@ -178,20 +201,34 @@ export default function WaiterPWA() {
 
           /* Zone 2: Take Order items */
           <div className="space-y-4">
-            
-            {/* Table Header */}
-            <div className="flex justify-between items-center bg-white/5 p-3 rounded-xl border border-white/5">
-              <div>
-                <span className="text-lg font-bold text-white">Mesa {selectedTable.tableNumber}</span>
-                <span className="text-xs text-slate-400 block uppercase font-semibold">Zona: {selectedTable.zone}</span>
-              </div>
-              <button 
-                onClick={() => setSelectedTable(null)}
-                className="text-xs bg-slate-800 hover:bg-slate-700 text-slate-400 px-3 py-1.5 rounded-lg"
-              >
-                Cambiar Mesa
-              </button>
-            </div>
+                        {/* Table Header */}
+             <div className="flex flex-col gap-2.5 bg-white/5 p-3 rounded-xl border border-white/5">
+               <div className="flex justify-between items-center">
+                 <div>
+                   <span className="text-lg font-bold text-white">Mesa {selectedTable.tableNumber}</span>
+                   <span className="text-xs text-slate-400 block uppercase font-semibold">Zona: {selectedTable.zone}</span>
+                 </div>
+                 <button 
+                   onClick={() => setSelectedTable(null)}
+                   className="text-xs bg-slate-800 hover:bg-slate-700 text-slate-400 px-3 py-1.5 rounded-lg"
+                 >
+                   Cambiar Mesa
+                 </button>
+               </div>
+               
+               {/* Display allergies warnings inside order details if reservation exists */}
+               {(() => {
+                 const tableRes = reservationsList.find(r => r.tableId === selectedTable.id && r.status !== 'cancelled');
+                 if (tableRes?.allergies) {
+                   return (
+                     <div className="p-2 bg-rose-950/40 border border-rose-500/20 rounded-lg text-rose-300 text-[10px] font-bold flex items-center gap-1.5 animate-pulse">
+                       <span>⚠️ ATENCIÓN: Comensal con intolerancias / alergias: <strong className="text-rose-200">{tableRes.allergies}</strong></span>
+                     </div>
+                   );
+                 }
+                 return null;
+               })()}
+             </div>
 
             {/* Menu options */}
             <div className="space-y-2">

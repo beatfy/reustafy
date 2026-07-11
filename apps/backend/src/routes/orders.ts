@@ -92,6 +92,53 @@ export async function orderRoutes(fastify: FastifyInstance) {
     }
   });
 
+  // Get all orders (optional filter by tableId, includes items)
+  fastify.get('/orders', async (req, reply) => {
+    const tenantId = req.userSession!.tenantId;
+    const { tableId } = req.query as { tableId?: string };
+
+    try {
+      const result = await runInTenantContext(tenantId, async (tx: any) => {
+        let query = tx
+          .select({
+            id: orders.id,
+            tableId: orders.tableId,
+            status: orders.status,
+            totalAmount: orders.totalAmount,
+            createdAt: orders.createdAt,
+            tableNumber: tables.tableNumber
+          })
+          .from(orders)
+          .leftJoin(tables, eq(orders.tableId, tables.id));
+
+        if (tableId) {
+          query = query.where(eq(orders.tableId, tableId));
+        }
+
+        const orderList = await query;
+
+        const fullOrders = [];
+        for (const order of orderList) {
+          const items = await tx
+            .select()
+            .from(orderItems)
+            .where(eq(orderItems.orderId, order.id));
+          
+          fullOrders.push({
+            ...order,
+            items
+          });
+        }
+        return fullOrders;
+      });
+
+      return result;
+    } catch (error) {
+      fastify.log.error(error);
+      return reply.code(500).send({ error: 'Failed to retrieve orders' });
+    }
+  });
+
   // 2. Get active orders for Kitchen Display System (KDS)
   fastify.get('/orders/kds', async (req, reply) => {
     const tenantId = req.userSession!.tenantId;

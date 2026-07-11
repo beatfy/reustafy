@@ -91,6 +91,7 @@ export const reservations = pgTable('reservations', {
   reservationTime: timestamp('reservation_time', { withTimezone: true }).notNull(),
   tableId: uuid('table_id').references(() => tables.id, { onDelete: 'set null' }),
   status: reservationStatusEnum('status').notNull().default('pending'),
+  allergies: varchar('allergies', { length: 255 }),
   createdAt: timestamp('created_at', { withTimezone: true }).defaultNow()
 });
 

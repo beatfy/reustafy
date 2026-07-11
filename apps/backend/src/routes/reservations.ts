@@ -31,7 +31,7 @@ export async function reservationRoutes(fastify: FastifyInstance) {
   fastify.post('/reservations', { preHandler: authenticateJWT }, async (req, reply) => {
     const tenantId = req.userSession!.tenantId;
     const userId = req.userSession!.userId;
-    const { customerName, customerEmail, customerPhone, partySize, reservationTime, tableId } = req.body as any;
+    const { customerName, customerEmail, customerPhone, partySize, reservationTime, tableId, allergies } = req.body as any;
 
     if (!customerName || !partySize || !reservationTime) {
       return reply.code(400).send({ error: 'customerName, partySize and reservationTime are required' });
@@ -49,14 +49,15 @@ export async function reservationRoutes(fastify: FastifyInstance) {
             partySize: parseInt(partySize),
             reservationTime: new Date(reservationTime),
             tableId: tableId || null,
-            status: 'pending'
+            status: 'pending',
+            allergies: allergies || null
           })
           .returning();
 
         await tx.insert(activityLogs).values({
           tenantId,
           userId,
-          actionDescription: `Nueva reserva creada internamente para ${customerName} (Pax: ${partySize})`
+          actionDescription: `Nueva reserva creada internamente para ${customerName} (Pax: ${partySize}, Alergias: ${allergies || 'Ninguna'})`
         });
 
         return res;
@@ -114,7 +115,7 @@ export async function reservationRoutes(fastify: FastifyInstance) {
 
   // Public Booking Widget endpoint (Bypasses standard JWT token checks, uses tenantId from request body)
   fastify.post('/public/reservations', async (req, reply) => {
-    const { tenantId, customerName, customerEmail, customerPhone, partySize, reservationTime } = req.body as any;
+    const { tenantId, customerName, customerEmail, customerPhone, partySize, reservationTime, allergies } = req.body as any;
 
     if (!tenantId || !customerName || !partySize || !reservationTime) {
       return reply.code(400).send({ error: 'tenantId, customerName, partySize, and reservationTime are required' });
@@ -133,7 +134,8 @@ export async function reservationRoutes(fastify: FastifyInstance) {
             partySize: parseInt(partySize),
             reservationTime: new Date(reservationTime),
             tableId: null, // Public bookings are unassigned by default
-            status: 'pending'
+            status: 'pending',
+            allergies: allergies || null
           })
           .returning();
 
@@ -141,7 +143,7 @@ export async function reservationRoutes(fastify: FastifyInstance) {
         await tx.insert(activityLogs).values({
           tenantId,
           userId: null, // System / Public entry
-          actionDescription: `Reserva online recibida de ${customerName} (Widget público, Pax: ${partySize})`
+          actionDescription: `Reserva online recibida de ${customerName} (Widget público, Pax: ${partySize}, Alergias: ${allergies || 'Ninguna'})`
         });
 
         return res;
@@ -278,6 +280,11 @@ export async function reservationRoutes(fastify: FastifyInstance) {
         <div class="form-group">
           <label>Teléfono</label>
           <input type="text" name="customerPhone" placeholder="+34 600 000 000">
+        </div>
+
+        <div class="form-group">
+          <label>Alergias o Intolerancias</label>
+          <input type="text" name="allergies" placeholder="Gluten, marisco, lactosa (O dejar vacío)">
         </div>
         
         <div class="form-group" style="display: flex; gap: 10px;">
