@@ -16,7 +16,7 @@ export async function authRoutes(fastify: FastifyInstance) {
 
     try {
       // Find the user by email (bypass RLS since we do not know the tenant ID yet)
-      const userResult = await runWithBypassRLS(async (tx) => {
+      const userResult = await runWithBypassRLS(async (tx: any) => {
         return await tx
           .select()
           .from(users)
@@ -41,7 +41,7 @@ export async function authRoutes(fastify: FastifyInstance) {
       }
 
       // Find Tenant details to check Subscription Tier
-      const tenantResult = await runWithBypassRLS(async (tx) => {
+      const tenantResult = await runWithBypassRLS(async (tx: any) => {
         return await tx
           .select()
           .from(tenants)

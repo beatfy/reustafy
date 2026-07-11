@@ -12,7 +12,7 @@ export async function logRoutes(fastify: FastifyInstance) {
     const tenantId = req.userSession!.tenantId;
 
     try {
-      const logs = await runInTenantContext(tenantId, async (tx) => {
+      const logs = await runInTenantContext(tenantId, async (tx: any) => {
         return await tx
           .select({
             id: activityLogs.id,

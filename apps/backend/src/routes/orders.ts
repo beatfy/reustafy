@@ -27,7 +27,7 @@ export async function orderRoutes(fastify: FastifyInstance) {
     }
 
     try {
-      const newOrder = await runInTenantContext(tenantId, async (tx) => {
+      const newOrder = await runInTenantContext(tenantId, async (tx: any) => {
         // Calculate total amount
         const total = items.reduce((acc, item) => acc + (item.price * item.quantity), 0);
 
@@ -97,7 +97,7 @@ export async function orderRoutes(fastify: FastifyInstance) {
     const tenantId = req.userSession!.tenantId;
 
     try {
-      const activeOrders = await runInTenantContext(tenantId, async (tx) => {
+      const activeOrders = await runInTenantContext(tenantId, async (tx: any) => {
         // Retrieve orders that are pending, cooking, or served (not paid yet)
         const orderList = await tx
           .select({
@@ -153,7 +153,7 @@ export async function orderRoutes(fastify: FastifyInstance) {
     }
 
     try {
-      const result = await runInTenantContext(tenantId, async (tx) => {
+      const result = await runInTenantContext(tenantId, async (tx: any) => {
         const [updatedOrder] = await tx
           .update(orders)
           .set({ status, updatedAt: new Date() })
@@ -209,7 +209,7 @@ export async function orderRoutes(fastify: FastifyInstance) {
     }
 
     try {
-      const result = await runInTenantContext(tenantId, async (tx) => {
+      const result = await runInTenantContext(tenantId, async (tx: any) => {
         const [updatedItem] = await tx
           .update(orderItems)
           .set({ status })

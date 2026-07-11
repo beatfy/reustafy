@@ -12,7 +12,7 @@ export async function reservationRoutes(fastify: FastifyInstance) {
     const tenantId = req.userSession!.tenantId;
 
     try {
-      const result = await runInTenantContext(tenantId, async (tx) => {
+      const result = await runInTenantContext(tenantId, async (tx: any) => {
         return await tx
           .select()
           .from(reservations)
@@ -36,7 +36,7 @@ export async function reservationRoutes(fastify: FastifyInstance) {
     }
 
     try {
-      const newReservation = await runInTenantContext(tenantId, async (tx) => {
+      const newReservation = await runInTenantContext(tenantId, async (tx: any) => {
         const [res] = await tx
           .insert(reservations)
           .values({
@@ -75,7 +75,7 @@ export async function reservationRoutes(fastify: FastifyInstance) {
     const { status, tableId } = req.body as { status?: 'pending' | 'confirmed' | 'cancelled' | 'seated', tableId?: string | null };
 
     try {
-      const updated = await runInTenantContext(tenantId, async (tx) => {
+      const updated = await runInTenantContext(tenantId, async (tx: any) => {
         const updateData: any = {};
         if (status !== undefined) updateData.status = status;
         if (tableId !== undefined) updateData.tableId = tableId;

@@ -172,7 +172,7 @@ CREATE POLICY tenant_isolation_activity_logs_policy ON activity_logs
 -- SEED DATA (Bypass RLS during seed since we execute as superuser/no session context)
 -- ==========================================
 
--- Seed Tenants
+-- Seed Tenants (Hex valid UUIDs)
 INSERT INTO tenants (id, name, subscription_tier) VALUES
 ('a0e0a0e0-a0e0-a0e0-a0e0-a0e0a0e0a0e1', 'Don Curro (Basic Tenant)', 'basic')
 ON CONFLICT (id) DO NOTHING;
@@ -182,56 +182,56 @@ INSERT INTO tenants (id, name, subscription_tier) VALUES
 ON CONFLICT (id) DO NOTHING;
 
 -- Seed Users (Passwords are 'password123' BCrypt-hashed: '$2b$10$tJm9wY2535FjB/j5q09BxeR6rYk0Y4tY1T659c0vW1S4F3P6vF7p2')
--- Basic Tenant Users
+-- Basic Tenant Users (c0e... are hex valid UUIDs)
 INSERT INTO users (id, tenant_id, name, email, password_hash, role, active) VALUES
-('u0e0a0e0-a0e0-a0e0-a0e0-a0e0a0e0a0e1', 'a0e0a0e0-a0e0-a0e0-a0e0-a0e0a0e0a0e1', 'Carlos Admin', 'carlos@doncurro.com', '$2b$10$tJm9wY2535FjB/j5q09BxeR6rYk0Y4tY1T659c0vW1S4F3P6vF7p2', 'admin', true),
-('u0e0a0e0-a0e0-a0e0-a0e0-a0e0a0e0a0e2', 'a0e0a0e0-a0e0-a0e0-a0e0-a0e0a0e0a0e1', 'Juan Waiter', 'juan@doncurro.com', '$2b$10$tJm9wY2535FjB/j5q09BxeR6rYk0Y4tY1T659c0vW1S4F3P6vF7p2', 'waiter', true),
-('u0e0a0e0-a0e0-a0e0-a0e0-a0e0a0e0a0e3', 'a0e0a0e0-a0e0-a0e0-a0e0-a0e0a0e0a0e1', 'Marta Kitchen', 'marta@doncurro.com', '$2b$10$tJm9wY2535FjB/j5q09BxeR6rYk0Y4tY1T659c0vW1S4F3P6vF7p2', 'kitchen', true)
+('c0e0a0e0-a0e0-a0e0-a0e0-a0e0a0e0a0e1', 'a0e0a0e0-a0e0-a0e0-a0e0-a0e0a0e0a0e1', 'Carlos Admin', 'carlos@doncurro.com', '$2b$10$tJm9wY2535FjB/j5q09BxeR6rYk0Y4tY1T659c0vW1S4F3P6vF7p2', 'admin', true),
+('c0e0a0e0-a0e0-a0e0-a0e0-a0e0a0e0a0e2', 'a0e0a0e0-a0e0-a0e0-a0e0-a0e0a0e0a0e1', 'Juan Waiter', 'juan@doncurro.com', '$2b$10$tJm9wY2535FjB/j5q09BxeR6rYk0Y4tY1T659c0vW1S4F3P6vF7p2', 'waiter', true),
+('c0e0a0e0-a0e0-a0e0-a0e0-a0e0a0e0a0e3', 'a0e0a0e0-a0e0-a0e0-a0e0-a0e0a0e0a0e1', 'Marta Kitchen', 'marta@doncurro.com', '$2b$10$tJm9wY2535FjB/j5q09BxeR6rYk0Y4tY1T659c0vW1S4F3P6vF7p2', 'kitchen', true)
 ON CONFLICT (id) DO NOTHING;
 
--- Premium Tenant Users
+-- Premium Tenant Users (f0b... are hex valid UUIDs)
 INSERT INTO users (id, tenant_id, name, email, password_hash, role, active) VALUES
-('u0b0b0b0-b0b0-b0b0-b0b0-b0b0b0b0b0b1', 'b0b0b0b0-b0b0-b0b0-b0b0-b0b0b0b0b0b2', 'Sophia Owner', 'sophia@legourmet.com', '$2b$10$tJm9wY2535FjB/j5q09BxeR6rYk0Y4tY1T659c0vW1S4F3P6vF7p2', 'admin', true),
-('u0b0b0b0-b0b0-b0b0-b0b0-b0b0b0b0b0b2', 'b0b0b0b0-b0b0-b0b0-b0b0-b0b0b0b0b0b2', 'Pedro Waiter', 'pedro@legourmet.com', '$2b$10$tJm9wY2535FjB/j5q09BxeR6rYk0Y4tY1T659c0vW1S4F3P6vF7p2', 'waiter', true)
+('f0b0b0b0-b0b0-b0b0-b0b0-b0b0b0b0b0b1', 'b0b0b0b0-b0b0-b0b0-b0b0-b0b0b0b0b0b2', 'Sophia Owner', 'sophia@legourmet.com', '$2b$10$tJm9wY2535FjB/j5q09BxeR6rYk0Y4tY1T659c0vW1S4F3P6vF7p2', 'admin', true),
+('f0b0b0b0-b0b0-b0b0-b0b0-b0b0b0b0b0b2', 'b0b0b0b0-b0b0-b0b0-b0b0-b0b0b0b0b0b2', 'Pedro Waiter', 'pedro@legourmet.com', '$2b$10$tJm9wY2535FjB/j5q09BxeR6rYk0Y4tY1T659c0vW1S4F3P6vF7p2', 'waiter', true)
 ON CONFLICT (id) DO NOTHING;
 
--- Seed Tables for Tenant A (Basic)
+-- Seed Tables for Tenant A (Basic) (d0e... are hex valid UUIDs)
 INSERT INTO tables (id, tenant_id, table_number, zone, status, capacity) VALUES
-('t0e0a0e0-a0e0-a0e0-a0e0-a0e0a0e0a001', 'a0e0a0e0-a0e0-a0e0-a0e0-a0e0a0e0a0e1', '1', 'salon', 'free', 4),
-('t0e0a0e0-a0e0-a0e0-a0e0-a0e0a0e0a002', 'a0e0a0e0-a0e0-a0e0-a0e0-a0e0a0e0a0e1', '2', 'salon', 'ordered', 2),
-('t0e0a0e0-a0e0-a0e0-a0e0-a0e0a0e0a003', 'a0e0a0e0-a0e0-a0e0-a0e0-a0e0a0e0a0e1', '3', 'terrace', 'eating', 6),
-('t0e0a0e0-a0e0-a0e0-a0e0-a0e0a0e0a004', 'a0e0a0e0-a0e0-a0e0-a0e0-a0e0a0e0a0e1', '4', 'terrace', 'bill', 4),
-('t0e0a0e0-a0e0-a0e0-a0e0-a0e0a0e0a005', 'a0e0a0e0-a0e0-a0e0-a0e0-a0e0a0e0a0e1', 'T1', 'bar', 'free', 2)
+('d0e0a0e0-a0e0-a0e0-a0e0-a0e0a0e0a001', 'a0e0a0e0-a0e0-a0e0-a0e0-a0e0a0e0a0e1', '1', 'salon', 'free', 4),
+('d0e0a0e0-a0e0-a0e0-a0e0-a0e0a0e0a002', 'a0e0a0e0-a0e0-a0e0-a0e0-a0e0a0e0a0e1', '2', 'salon', 'ordered', 2),
+('d0e0a0e0-a0e0-a0e0-a0e0-a0e0a0e0a003', 'a0e0a0e0-a0e0-a0e0-a0e0-a0e0a0e0a0e1', '3', 'terrace', 'eating', 6),
+('d0e0a0e0-a0e0-a0e0-a0e0-a0e0a0e0a004', 'a0e0a0e0-a0e0-a0e0-a0e0-a0e0a0e0a0e1', '4', 'terrace', 'bill', 4),
+('d0e0a0e0-a0e0-a0e0-a0e0-a0e0a0e0a005', 'a0e0a0e0-a0e0-a0e0-a0e0-a0e0a0e0a0e1', 'T1', 'bar', 'free', 2)
 ON CONFLICT (id) DO NOTHING;
 
--- Seed Tables for Tenant B (Premium)
+-- Seed Tables for Tenant B (Premium) (d0b... are hex valid UUIDs)
 INSERT INTO tables (id, tenant_id, table_number, zone, status, capacity) VALUES
-('t0b0b0b0-b0b0-b0b0-b0b0-b0b0b0b0b001', 'b0b0b0b0-b0b0-b0b0-b0b0-b0b0b0b0b0b2', '101', 'salon', 'free', 4),
-('t0b0b0b0-b0b0-b0b0-b0b0-b0b0b0b0b002', 'b0b0b0b0-b0b0-b0b0-b0b0-b0b0b0b0b0b2', '102', 'salon', 'eating', 4),
-('t0b0b0b0-b0b0-b0b0-b0b0-b0b0b0b0b003', 'b0b0b0b0-b0b0-b0b0-b0b0-b0b0b0b0b0b2', 'V1', 'terrace', 'free', 2)
+('d0b0b0b0-b0b0-b0b0-b0b0-b0b0b0b0b001', 'b0b0b0b0-b0b0-b0b0-b0b0-b0b0b0b0b0b2', '101', 'salon', 'free', 4),
+('d0b0b0b0-b0b0-b0b0-b0b0-b0b0b0b0b002', 'b0b0b0b0-b0b0-b0b0-b0b0-b0b0b0b0b0b2', '102', 'salon', 'eating', 4),
+('d0b0b0b0-b0b0-b0b0-b0b0-b0b0b0b0b003', 'b0b0b0b0-b0b0-b0b0-b0b0-b0b0b0b0b0b2', 'V1', 'terrace', 'free', 2)
 ON CONFLICT (id) DO NOTHING;
 
--- Seed Orders and Items for Tenant A
+-- Seed Orders and Items for Tenant A (e0e... and 10e... are hex valid UUIDs)
 INSERT INTO orders (id, tenant_id, table_id, waiter_id, status, total_amount) VALUES
-('o0e0a0e0-a0e0-a0e0-a0e0-a0e0a0e0a001', 'a0e0a0e0-a0e0-a0e0-a0e0-a0e0a0e0a0e1', 't0e0a0e0-a0e0-a0e0-a0e0-a0e0a0e0a002', 'u0e0a0e0-a0e0-a0e0-a0e0-a0e0a0e0a0e2', 'pending', 34.50),
-('o0e0a0e0-a0e0-a0e0-a0e0-a0e0a0e0a002', 'a0e0a0e0-a0e0-a0e0-a0e0-a0e0a0e0a0e1', 't0e0a0e0-a0e0-a0e0-a0e0-a0e0a0e0a003', 'u0e0a0e0-a0e0-a0e0-a0e0-a0e0a0e0a0e2', 'cooking', 42.00)
+('e0e0a0e0-a0e0-a0e0-a0e0-a0e0a0e0a001', 'a0e0a0e0-a0e0-a0e0-a0e0-a0e0a0e0a0e1', 'd0e0a0e0-a0e0-a0e0-a0e0-a0e0a0e0a002', 'c0e0a0e0-a0e0-a0e0-a0e0-a0e0a0e0a0e2', 'pending', 34.50),
+('e0e0a0e0-a0e0-a0e0-a0e0-a0e0a0e0a002', 'a0e0a0e0-a0e0-a0e0-a0e0-a0e0a0e0a0e1', 'd0e0a0e0-a0e0-a0e0-a0e0-a0e0a0e0a003', 'c0e0a0e0-a0e0-a0e0-a0e0-a0e0a0e0a0e2', 'cooking', 42.00)
 ON CONFLICT (id) DO NOTHING;
 
 INSERT INTO order_items (id, tenant_id, order_id, item_name, quantity, price, status) VALUES
-('i0e0a0e0-a0e0-a0e0-a0e0-a0e0a0e0a001', 'a0e0a0e0-a0e0-a0e0-a0e0-a0e0a0e0a0e1', 'o0e0a0e0-a0e0-a0e0-a0e0-a0e0a0e0a001', 'Patatas Bravas', 2, 6.50, 'pending'),
-('i0e0a0e0-a0e0-a0e0-a0e0-a0e0a0e0a002', 'a0e0a0e0-a0e0-a0e0-a0e0-a0e0a0e0a0e1', 'o0e0a0e0-a0e0-a0e0-a0e0-a0e0a0e0a001', 'Solomillo al Whisky', 1, 14.50, 'pending'),
-('i0e0a0e0-a0e0-a0e0-a0e0-a0e0a0e0a003', 'a0e0a0e0-a0e0-a0e0-a0e0-a0e0a0e0a0e1', 'o0e0a0e0-a0e0-a0e0-a0e0-a0e0a0e0a001', 'Caña Cruzcampo', 3, 2.30, 'served'),
-('i0e0a0e0-a0e0-a0e0-a0e0-a0e0a0e0a004', 'a0e0a0e0-a0e0-a0e0-a0e0-a0e0a0e0a0e1', 'o0e0a0e0-a0e0-a0e0-a0e0-a0e0a0e0a002', 'Hamburguesa Gourmet', 3, 14.00, 'cooking')
+('10e0a0e0-a0e0-a0e0-a0e0-a0e0a0e0a001', 'a0e0a0e0-a0e0-a0e0-a0e0-a0e0a0e0a0e1', 'e0e0a0e0-a0e0-a0e0-a0e0-a0e0a0e0a001', 'Patatas Bravas', 2, 6.50, 'pending'),
+('10e0a0e0-a0e0-a0e0-a0e0-a0e0a0e0a002', 'a0e0a0e0-a0e0-a0e0-a0e0-a0e0a0e0a0e1', 'e0e0a0e0-a0e0-a0e0-a0e0-a0e0a0e0a001', 'Solomillo al Whisky', 1, 14.50, 'pending'),
+('10e0a0e0-a0e0-a0e0-a0e0-a0e0a0e0a003', 'a0e0a0e0-a0e0-a0e0-a0e0-a0e0a0e0a0e1', 'e0e0a0e0-a0e0-a0e0-a0e0-a0e0a0e0a001', 'Caña Cruzcampo', 3, 2.30, 'served'),
+('10e0a0e0-a0e0-a0e0-a0e0-a0e0a0e0a004', 'a0e0a0e0-a0e0-a0e0-a0e0-a0e0a0e0a0e1', 'e0e0a0e0-a0e0-a0e0-a0e0-a0e0a0e0a002', 'Hamburguesa Gourmet', 3, 14.00, 'cooking')
 ON CONFLICT (id) DO NOTHING;
 
--- Seed Reservations for Tenant A
+-- Seed Reservations for Tenant A (80e... are hex valid UUIDs)
 INSERT INTO reservations (id, tenant_id, customer_name, customer_email, customer_phone, party_size, reservation_time, table_id, status) VALUES
-('r0e0a0e0-a0e0-a0e0-a0e0-a0e0a0e0a001', 'a0e0a0e0-a0e0-a0e0-a0e0-a0e0a0e0a0e1', 'Lucía Pérez', 'lucia@gmail.com', '+34600112233', 4, CURRENT_TIMESTAMP + INTERVAL '2 hours', 't0e0a0e0-a0e0-a0e0-a0e0-a0e0a0e0a001', 'pending'),
-('r0e0a0e0-a0e0-a0e0-a0e0-a0e0a0e0a002', 'a0e0a0e0-a0e0-a0e0-a0e0-a0e0a0e0a0e1', 'Marcos Gómez', 'marcos@hotmail.com', '+34611223344', 2, CURRENT_TIMESTAMP + INTERVAL '4 hours', NULL, 'pending')
+('80e0a0e0-a0e0-a0e0-a0e0-a0e0a0e0a001', 'a0e0a0e0-a0e0-a0e0-a0e0-a0e0a0e0a0e1', 'Lucía Pérez', 'lucia@gmail.com', '+34600112233', 4, CURRENT_TIMESTAMP + INTERVAL '2 hours', 'd0e0a0e0-a0e0-a0e0-a0e0-a0e0a0e0a001', 'pending'),
+('80e0a0e0-a0e0-a0e0-a0e0-a0e0a0e0a002', 'a0e0a0e0-a0e0-a0e0-a0e0-a0e0a0e0a0e1', 'Marcos Gómez', 'marcos@hotmail.com', '+34611223344', 2, CURRENT_TIMESTAMP + INTERVAL '4 hours', NULL, 'pending')
 ON CONFLICT (id) DO NOTHING;
 
--- Seed Activity Logs for Tenant A
+-- Seed Activity Logs for Tenant A (90e... are hex valid UUIDs)
 INSERT INTO activity_logs (id, tenant_id, user_id, action_description) VALUES
-('l0e0a0e0-a0e0-a0e0-a0e0-a0e0a0e0a001', 'a0e0a0e0-a0e0-a0e0-a0e0-a0e0a0e0a0e1', 'u0e0a0e0-a0e0-a0e0-a0e0-a0e0a0e0a0e2', 'Juan Waiter creó la comanda en Mesa 2'),
-('l0e0a0e0-a0e0-a0e0-a0e0-a0e0a0e0a002', 'a0e0a0e0-a0e0-a0e0-a0e0-a0e0a0e0a0e1', 'u0e0a0e0-a0e0-a0e0-a0e0-a0e0a0e0a0e2', 'Juan Waiter sirvió 3 Caña Cruzcampo en Mesa 2')
+('90e0a0e0-a0e0-a0e0-a0e0-a0e0a0e0a001', 'a0e0a0e0-a0e0-a0e0-a0e0-a0e0a0e0a0e1', 'c0e0a0e0-a0e0-a0e0-a0e0-a0e0a0e0a0e2', 'Juan Waiter creó la comanda en Mesa 2'),
+('90e0a0e0-a0e0-a0e0-a0e0-a0e0a0e0a002', 'a0e0a0e0-a0e0-a0e0-a0e0-a0e0a0e0a0e1', 'c0e0a0e0-a0e0-a0e0-a0e0-a0e0a0e0a0e2', 'Juan Waiter sirvió 3 Caña Cruzcampo en Mesa 2')
 ON CONFLICT (id) DO NOTHING;

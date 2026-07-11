@@ -19,7 +19,8 @@ import {
   CheckCircle,
   AlertTriangle,
   Tablet,
-  ChefHat
+  ChefHat,
+  Utensils
 } from 'lucide-react';
 
 interface Table {

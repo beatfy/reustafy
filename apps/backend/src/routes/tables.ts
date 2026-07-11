@@ -13,7 +13,7 @@ export async function tableRoutes(fastify: FastifyInstance) {
     const tenantId = req.userSession!.tenantId;
 
     try {
-      const result = await runInTenantContext(tenantId, async (tx) => {
+      const result = await runInTenantContext(tenantId, async (tx: any) => {
         return await tx.select().from(tables);
       });
       return result;
@@ -36,7 +36,7 @@ export async function tableRoutes(fastify: FastifyInstance) {
     }
 
     try {
-      const updatedTable = await runInTenantContext(tenantId, async (tx) => {
+      const updatedTable = await runInTenantContext(tenantId, async (tx: any) => {
         // 1. Update the table status
         const [updated] = await tx
           .update(tables)
