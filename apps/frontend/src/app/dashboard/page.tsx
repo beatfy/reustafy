@@ -298,13 +298,13 @@ export default function Dashboard() {
           
           {/* Quick link to Waiter and Kitchen interfaces */}
           <button 
-            onClick={() => alert('Abrir PWA de Camareros (Mockup)')}
+            onClick={() => router.push('/waiter')}
             className="flex items-center gap-1.5 px-3 py-1.5 text-xs bg-slate-800 hover:bg-slate-700 text-slate-300 font-semibold rounded-lg transition"
           >
             <Tablet className="h-3.5 w-3.5" /> Camarero PWA
           </button>
           <button 
-            onClick={() => alert('Abrir KDS de Cocina (Mockup)')}
+            onClick={() => router.push('/kitchen')}
             className="flex items-center gap-1.5 px-3 py-1.5 text-xs bg-slate-800 hover:bg-slate-700 text-slate-300 font-semibold rounded-lg transition"
           >
             <ChefHat className="h-3.5 w-3.5" /> Cocina KDS
