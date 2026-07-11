@@ -14,7 +14,8 @@
     "db:generate": "npm run db:generate --workspace=packages/database",
     "db:migrate": "npm run db:migrate --workspace=packages/database",
     "start:backend": "npm run start --workspace=apps/backend",
-    "start:frontend": "npm run start --workspace=apps/frontend"
+    "start:frontend": "npm run start --workspace=apps/frontend",
+    "start": "npm run start:backend"
   },
   "devDependencies": {
     "typescript": "^5.3.3"
