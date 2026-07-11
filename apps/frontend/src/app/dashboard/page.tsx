@@ -20,7 +20,8 @@ import {
   AlertTriangle,
   Tablet,
   ChefHat,
-  Utensils
+  Utensils,
+  Star
 } from 'lucide-react';
 
 interface Table {
