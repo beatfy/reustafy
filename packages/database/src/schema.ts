@@ -49,7 +49,8 @@ export const tables = pgTable('tables', {
   tableNumber: varchar('table_number', { length: 50 }).notNull(),
   zone: tableZoneEnum('zone').notNull().default('salon'),
   status: tableStatusEnum('status').notNull().default('free'),
-  capacity: integer('capacity').notNull().default(4)
+  capacity: integer('capacity').notNull().default(4),
+  joinedWithTableId: uuid('joined_with_table_id').references((): any => tables.id, { onDelete: 'set null' })
 }, (table) => {
   return {
     tenantTableIdx: uniqueIndex('tables_tenant_number_idx').on(table.tenantId, table.tableNumber)
@@ -185,3 +186,17 @@ export const registerClosingsRelations = relations(registerClosings, ({ one }) =
   tenant: one(tenants, { fields: [registerClosings.tenantId], references: [tenants.id] }),
   user: one(users, { fields: [registerClosings.userId], references: [users.id] })
 }));
+
+// 11. Expenses Table
+export const expenses = pgTable('expenses', {
+  id: uuid('id').primaryKey().defaultRandom(),
+  tenantId: uuid('tenant_id').notNull().references(() => tenants.id, { onDelete: 'cascade' }),
+  amount: decimal('amount', { precision: 10, scale: 2 }).notNull(),
+  description: varchar('description', { length: 255 }).notNull(),
+  createdAt: timestamp('created_at', { withTimezone: true }).defaultNow()
+});
+
+export const expensesRelations = relations(expenses, ({ one }) => ({
+  tenant: one(tenants, { fields: [expenses.tenantId], references: [tenants.id] })
+}));
+

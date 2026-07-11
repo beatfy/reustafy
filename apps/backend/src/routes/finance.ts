@@ -1,6 +1,6 @@
 import { FastifyInstance } from 'fastify';
-import { runInTenantContext, orders, registerClosings, activityLogs } from '@reustafy/database';
-import { eq, and, gte, desc } from 'drizzle-orm';
+import { runInTenantContext, orders, registerClosings, activityLogs, expenses } from '@reustafy/database';
+import { eq, and, gte, lte, desc } from 'drizzle-orm';
 import { authenticateJWT } from '../middleware/auth';
 import { requireTier } from '../middleware/subscription';
 
@@ -95,8 +95,21 @@ export async function financeRoutes(fastify: FastifyInstance) {
             )
           );
 
-        // Calculate expected sum
-        const expected = paidOrders.reduce((acc: number, order: any) => acc + parseFloat(order.totalAmount), 0);
+        // Find total cash expenses today
+        const todayExpenses = await tx
+          .select({
+            amount: expenses.amount
+          })
+          .from(expenses)
+          .where(
+            gte(expenses.createdAt, today)
+          );
+
+        // Calculate expected sum (Ventas - Gastos)
+        const totalSales = paidOrders.reduce((acc: number, order: any) => acc + parseFloat(order.totalAmount), 0);
+        const totalExpenses = todayExpenses.reduce((acc: number, exp: any) => acc + parseFloat(exp.amount), 0);
+        const expected = totalSales - totalExpenses;
+        
         const discrepancy = actualAmount - expected;
 
         // Insert Register Closing
@@ -112,14 +125,18 @@ export async function financeRoutes(fastify: FastifyInstance) {
           .returning();
 
         // Create log
-        const descText = `Arqueo de caja ciego realizado. Efectivo contado: ${actualAmount.toFixed(2)}€, Esperado: ${expected.toFixed(2)}€, Descuadre: ${discrepancy.toFixed(2)}€`;
+        const descText = `Arqueo de caja ciego realizado. Efectivo contado: ${actualAmount.toFixed(2)}€, Esperado (Ventas ${totalSales.toFixed(2)} - Gastos ${totalExpenses.toFixed(2)}): ${expected.toFixed(2)}€, Descuadre: ${discrepancy.toFixed(2)}€`;
         await tx.insert(activityLogs).values({
           tenantId,
           userId,
           actionDescription: descText
         });
 
-        return inserted;
+        return {
+          ...inserted,
+          totalSales: totalSales.toFixed(2),
+          totalExpenses: totalExpenses.toFixed(2)
+        };
       });
 
       return reply.code(201).send(closing);
@@ -129,22 +146,98 @@ export async function financeRoutes(fastify: FastifyInstance) {
     }
   });
 
-  // 4. Get recent Register Closings
+  // 4. Get recent Register Closings (optional date filters)
   fastify.get('/closings', async (req, reply) => {
     const tenantId = req.userSession!.tenantId;
+    const { startDate, endDate } = req.query as { startDate?: string; endDate?: string };
 
     try {
       const history = await runInTenantContext(tenantId, async (tx: any) => {
+        let conditions = [eq(registerClosings.tenantId, tenantId)];
+        if (startDate) {
+          conditions.push(gte(registerClosings.createdAt, new Date(startDate)));
+        }
+        if (endDate) {
+          conditions.push(lte(registerClosings.createdAt, new Date(endDate)));
+        }
+
         return await tx
           .select()
           .from(registerClosings)
+          .where(and(...conditions))
           .orderBy(desc(registerClosings.createdAt))
-          .limit(20);
+          .limit(50);
       });
       return history;
     } catch (error) {
       fastify.log.error(error);
       return reply.code(500).send({ error: 'Failed to retrieve closings history' });
+    }
+  });
+
+  // 5. Submit a cash expense (Gasto de caja)
+  fastify.post('/expenses', async (req, reply) => {
+    const tenantId = req.userSession!.tenantId;
+    const userId = req.userSession!.userId;
+    const { amount, description } = req.body as { amount: number; description: string };
+
+    if (!amount || amount <= 0 || !description) {
+      return reply.code(400).send({ error: 'amount and description are required' });
+    }
+
+    try {
+      const newExpense = await runInTenantContext(tenantId, async (tx: any) => {
+        const [inserted] = await tx
+          .insert(expenses)
+          .values({
+            tenantId,
+            amount: amount.toFixed(2),
+            description
+          })
+          .returning();
+
+        await tx.insert(activityLogs).values({
+          tenantId,
+          userId,
+          actionDescription: `Gasto de caja registrado: ${description} por valor de ${amount.toFixed(2)}€`
+        });
+
+        return inserted;
+      });
+
+      return reply.code(201).send(newExpense);
+    } catch (error) {
+      fastify.log.error(error);
+      return reply.code(500).send({ error: 'Failed to record expense' });
+    }
+  });
+
+  // 6. Get cash expenses (optional date range)
+  fastify.get('/expenses', async (req, reply) => {
+    const tenantId = req.userSession!.tenantId;
+    const { startDate, endDate } = req.query as { startDate?: string; endDate?: string };
+
+    try {
+      const result = await runInTenantContext(tenantId, async (tx: any) => {
+        let conditions = [eq(expenses.tenantId, tenantId)];
+        if (startDate) {
+          conditions.push(gte(expenses.createdAt, new Date(startDate)));
+        }
+        if (endDate) {
+          conditions.push(lte(expenses.createdAt, new Date(endDate)));
+        }
+
+        return await tx
+          .select()
+          .from(expenses)
+          .where(and(...conditions))
+          .orderBy(desc(expenses.createdAt));
+      });
+
+      return result;
+    } catch (error) {
+      fastify.log.error(error);
+      return reply.code(500).send({ error: 'Failed to retrieve expenses' });
     }
   });
 }

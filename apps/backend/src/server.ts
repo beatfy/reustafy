@@ -32,6 +32,7 @@ import { logRoutes } from './routes/logs';
 import { reservationRoutes } from './routes/reservations';
 import { financeRoutes } from './routes/finance';
 import { loyaltyRoutes } from './routes/loyalty';
+import { configRoutes } from './routes/config';
 
 // Register Routes
 server.register(authRoutes, { prefix: '/api/auth' });
@@ -41,6 +42,7 @@ server.register(logRoutes, { prefix: '/api' });
 server.register(reservationRoutes, { prefix: '/api' });
 server.register(financeRoutes, { prefix: '/api/finance' });
 server.register(loyaltyRoutes, { prefix: '/api' });
+server.register(configRoutes, { prefix: '/api' });
 
 // Health Check
 server.get('/health', async () => {

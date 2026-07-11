@@ -48,11 +48,19 @@ export async function tableRoutes(fastify: FastifyInstance) {
           throw new Error('Table not found or access denied');
         }
 
+        // Mirror status change if joined
+        if (updated.joinedWithTableId) {
+          await tx
+            .update(tables)
+            .set({ status })
+            .where(eq(tables.id, updated.joinedWithTableId));
+        }
+
         // 2. Create an activity log
         await tx.insert(activityLogs).values({
           tenantId,
           userId,
-          actionDescription: `Mesa ${updated.tableNumber} cambiada a estado '${status}'`
+          actionDescription: `Mesa ${updated.tableNumber} cambiada a estado '${status}'${updated.joinedWithTableId ? ' (Sincronizada con mesa unida)' : ''}`
         });
 
         return updated;
@@ -124,6 +132,178 @@ export async function tableRoutes(fastify: FastifyInstance) {
     } catch (error: any) {
       fastify.log.error(error);
       return reply.code(500).send({ error: error.message || 'Failed to checkout table' });
+    }
+  });
+
+  // Join two tables
+  fastify.post('/tables/join', async (req, reply) => {
+    const tenantId = req.userSession!.tenantId;
+    const userId = req.userSession!.userId;
+    const { tableIdA, tableIdB } = req.body as { tableIdA: string; tableIdB: string };
+
+    if (!tableIdA || !tableIdB || tableIdA === tableIdB) {
+      return reply.code(400).send({ error: 'Two different table IDs are required to join' });
+    }
+
+    try {
+      const result = await runInTenantContext(tenantId, async (tx: any) => {
+        // 1. Update Table A to link to Table B
+        const [updatedA] = await tx
+          .update(tables)
+          .set({ joinedWithTableId: tableIdB })
+          .where(eq(tables.id, tableIdA))
+          .returning();
+
+        // 2. Update Table B to link to Table A
+        const [updatedB] = await tx
+          .update(tables)
+          .set({ joinedWithTableId: tableIdA })
+          .where(eq(tables.id, tableIdB))
+          .returning();
+
+        if (!updatedA || !updatedB) {
+          throw new Error('One or both tables could not be found');
+        }
+
+        // Log the link
+        await tx.insert(activityLogs).values({
+          tenantId,
+          userId,
+          actionDescription: `Mesas unidas: Mesa ${updatedA.tableNumber} y Mesa ${updatedB.tableNumber}`
+        });
+
+        return { success: true, tableA: updatedA, tableB: updatedB };
+      });
+
+      return result;
+    } catch (error: any) {
+      fastify.log.error(error);
+      return reply.code(500).send({ error: error.message || 'Failed to join tables' });
+    }
+  });
+
+  // Unjoin a table (breaks connection on both ends)
+  fastify.post('/tables/unjoin', async (req, reply) => {
+    const tenantId = req.userSession!.tenantId;
+    const userId = req.userSession!.userId;
+    const { tableId } = req.body as { tableId: string };
+
+    if (!tableId) {
+      return reply.code(400).send({ error: 'tableId is required' });
+    }
+
+    try {
+      const result = await runInTenantContext(tenantId, async (tx: any) => {
+        // 1. Find the target table
+        const [table] = await tx
+          .select()
+          .from(tables)
+          .where(eq(tables.id, tableId));
+
+        if (!table) {
+          throw new Error('Table not found');
+        }
+
+        const joinedId = table.joinedWithTableId;
+
+        // 2. Clear joinedWithTableId on target table
+        await tx
+          .update(tables)
+          .set({ joinedWithTableId: null })
+          .where(eq(tables.id, tableId));
+
+        // 3. Clear joinedWithTableId on the partner table (if existed)
+        if (joinedId) {
+          await tx
+            .update(tables)
+            .set({ joinedWithTableId: null })
+            .where(eq(tables.id, joinedId));
+        }
+
+        await tx.insert(activityLogs).values({
+          tenantId,
+          userId,
+          actionDescription: `Mesa ${table.tableNumber} desunida / separada`
+        });
+
+        return { success: true, unjoinedTableId: tableId, partnerTableId: joinedId };
+      });
+
+      return result;
+    } catch (error: any) {
+      fastify.log.error(error);
+      return reply.code(500).send({ error: error.message || 'Failed to unjoin tables' });
+    }
+  });
+
+  // CRUD: Add a new table
+  fastify.post('/tables', async (req, reply) => {
+    const tenantId = req.userSession!.tenantId;
+    const userId = req.userSession!.userId;
+    const { tableNumber, zone, capacity } = req.body as { tableNumber: string; zone: 'salon' | 'terrace' | 'bar'; capacity: number };
+
+    if (!tableNumber || !zone || !capacity) {
+      return reply.code(400).send({ error: 'tableNumber, zone and capacity are required' });
+    }
+
+    try {
+      const newTable = await runInTenantContext(tenantId, async (tx: any) => {
+        const [inserted] = await tx
+          .insert(tables)
+          .values({
+            tenantId,
+            tableNumber,
+            zone,
+            capacity: parseInt(capacity as any)
+          })
+          .returning();
+
+        await tx.insert(activityLogs).values({
+          tenantId,
+          userId,
+          actionDescription: `Nueva mesa ${tableNumber} creada en zona ${zone} (pax: ${capacity})`
+        });
+
+        return inserted;
+      });
+
+      return reply.code(201).send(newTable);
+    } catch (error: any) {
+      fastify.log.error(error);
+      return reply.code(500).send({ error: error.message || 'Failed to create table' });
+    }
+  });
+
+  // CRUD: Delete a table
+  fastify.delete('/tables/:id', async (req, reply) => {
+    const tenantId = req.userSession!.tenantId;
+    const userId = req.userSession!.userId;
+    const { id } = req.params as { id: string };
+
+    try {
+      const deletedTable = await runInTenantContext(tenantId, async (tx: any) => {
+        const [deleted] = await tx
+          .delete(tables)
+          .where(eq(tables.id, id))
+          .returning();
+
+        if (!deleted) {
+          throw new Error('Table not found or access denied');
+        }
+
+        await tx.insert(activityLogs).values({
+          tenantId,
+          userId,
+          actionDescription: `Mesa ${deleted.tableNumber} eliminada del restaurante`
+        });
+
+        return deleted;
+      });
+
+      return deletedTable;
+    } catch (error: any) {
+      fastify.log.error(error);
+      return reply.code(500).send({ error: error.message || 'Failed to delete table' });
     }
   });
 }
