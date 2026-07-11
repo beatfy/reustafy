@@ -15,14 +15,7 @@ try {
 }
 
 const server = fastify({
-  logger: {
-    transport: {
-      target: 'pino-pretty',
-      options: {
-        colorize: true
-      }
-    }
-  }
+  logger: true
 });
 
 // Register CORS
