@@ -181,18 +181,18 @@ INSERT INTO tenants (id, name, subscription_tier) VALUES
 ('b0b0b0b0-b0b0-b0b0-b0b0-b0b0b0b0b0b2', 'Le Gourmet Franchise (Premium Tenant)', 'premium')
 ON CONFLICT (id) DO NOTHING;
 
--- Seed Users (Passwords are 'password123' BCrypt-hashed: '$2b$10$tJm9wY2535FjB/j5q09BxeR6rYk0Y4tY1T659c0vW1S4F3P6vF7p2')
+-- Seed Users (Passwords are 'password123' BCrypt-hashed: '$2a$10$6S30wILiammW//20yvTOlep.gULuf2NAu5qPyaMSUg0arbW9tHtG2')
 -- Basic Tenant Users (c0e... are hex valid UUIDs)
 INSERT INTO users (id, tenant_id, name, email, password_hash, role, active) VALUES
-('c0e0a0e0-a0e0-a0e0-a0e0-a0e0a0e0a0e1', 'a0e0a0e0-a0e0-a0e0-a0e0-a0e0a0e0a0e1', 'Carlos Admin', 'carlos@doncurro.com', '$2b$10$tJm9wY2535FjB/j5q09BxeR6rYk0Y4tY1T659c0vW1S4F3P6vF7p2', 'admin', true),
-('c0e0a0e0-a0e0-a0e0-a0e0-a0e0a0e0a0e2', 'a0e0a0e0-a0e0-a0e0-a0e0-a0e0a0e0a0e1', 'Juan Waiter', 'juan@doncurro.com', '$2b$10$tJm9wY2535FjB/j5q09BxeR6rYk0Y4tY1T659c0vW1S4F3P6vF7p2', 'waiter', true),
-('c0e0a0e0-a0e0-a0e0-a0e0-a0e0a0e0a0e3', 'a0e0a0e0-a0e0-a0e0-a0e0-a0e0a0e0a0e1', 'Marta Kitchen', 'marta@doncurro.com', '$2b$10$tJm9wY2535FjB/j5q09BxeR6rYk0Y4tY1T659c0vW1S4F3P6vF7p2', 'kitchen', true)
+('c0e0a0e0-a0e0-a0e0-a0e0-a0e0a0e0a0e1', 'a0e0a0e0-a0e0-a0e0-a0e0-a0e0a0e0a0e1', 'Carlos Admin', 'carlos@doncurro.com', '$2a$10$6S30wILiammW//20yvTOlep.gULuf2NAu5qPyaMSUg0arbW9tHtG2', 'admin', true),
+('c0e0a0e0-a0e0-a0e0-a0e0-a0e0a0e0a0e2', 'a0e0a0e0-a0e0-a0e0-a0e0-a0e0a0e0a0e1', 'Juan Waiter', 'juan@doncurro.com', '$2a$10$6S30wILiammW//20yvTOlep.gULuf2NAu5qPyaMSUg0arbW9tHtG2', 'waiter', true),
+('c0e0a0e0-a0e0-a0e0-a0e0-a0e0a0e0a0e3', 'a0e0a0e0-a0e0-a0e0-a0e0-a0e0a0e0a0e1', 'Marta Kitchen', 'marta@doncurro.com', '$2a$10$6S30wILiammW//20yvTOlep.gULuf2NAu5qPyaMSUg0arbW9tHtG2', 'kitchen', true)
 ON CONFLICT (id) DO NOTHING;
 
 -- Premium Tenant Users (f0b... are hex valid UUIDs)
 INSERT INTO users (id, tenant_id, name, email, password_hash, role, active) VALUES
-('f0b0b0b0-b0b0-b0b0-b0b0-b0b0b0b0b0b1', 'b0b0b0b0-b0b0-b0b0-b0b0-b0b0b0b0b0b2', 'Sophia Owner', 'sophia@legourmet.com', '$2b$10$tJm9wY2535FjB/j5q09BxeR6rYk0Y4tY1T659c0vW1S4F3P6vF7p2', 'admin', true),
-('f0b0b0b0-b0b0-b0b0-b0b0-b0b0b0b0b0b2', 'b0b0b0b0-b0b0-b0b0-b0b0-b0b0b0b0b0b2', 'Pedro Waiter', 'pedro@legourmet.com', '$2b$10$tJm9wY2535FjB/j5q09BxeR6rYk0Y4tY1T659c0vW1S4F3P6vF7p2', 'waiter', true)
+('f0b0b0b0-b0b0-b0b0-b0b0-b0b0b0b0b0b1', 'b0b0b0b0-b0b0-b0b0-b0b0-b0b0b0b0b0b2', 'Sophia Owner', 'sophia@legourmet.com', '$2a$10$6S30wILiammW//20yvTOlep.gULuf2NAu5qPyaMSUg0arbW9tHtG2', 'admin', true),
+('f0b0b0b0-b0b0-b0b0-b0b0-b0b0b0b0b0b2', 'b0b0b0b0-b0b0-b0b0-b0b0-b0b0b0b0b0b2', 'Pedro Waiter', 'pedro@legourmet.com', '$2a$10$6S30wILiammW//20yvTOlep.gULuf2NAu5qPyaMSUg0arbW9tHtG2', 'waiter', true)
 ON CONFLICT (id) DO NOTHING;
 
 -- Seed Tables for Tenant A (Basic) (d0e... are hex valid UUIDs)
