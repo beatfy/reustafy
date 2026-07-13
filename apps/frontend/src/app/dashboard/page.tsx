@@ -163,12 +163,24 @@ export default function Dashboard() {
 
     try {
       // 1. Fetch tables
-      const tablesRes = await fetch(`${apiUrl}/api/tables`, {
-        headers: { Authorization: `Bearer ${activeToken}` }
-      });
-      if (!tablesRes.ok) throw new Error('Error al cargar mesas');
-      const tablesData = await tablesRes.json();
-      setTablesList(tablesData);
+      let tablesData: any[] = [];
+      try {
+        const tablesRes = await fetch(`${apiUrl}/api/tables`, {
+          headers: { Authorization: `Bearer ${activeToken}` }
+        });
+        if (!tablesRes.ok) {
+          const errBody = await tablesRes.json().catch(() => ({}));
+          throw new Error(errBody.error || `Error ${tablesRes.status} al cargar mesas`);
+        }
+        tablesData = await tablesRes.json();
+        setTablesList(tablesData);
+      } catch (tableErr: any) {
+        // Network error means the backend URL is wrong
+        if (tableErr instanceof TypeError) {
+          throw new Error(`No se puede conectar con el backend (${apiUrl}). Verifica que NEXT_PUBLIC_API_URL esté configurado correctamente en Railway.`);
+        }
+        throw tableErr;
+      }
 
        // 2. Fetch reservations
        const resRes = await fetch(`${apiUrl}/api/reservations`, {

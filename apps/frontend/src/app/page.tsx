@@ -13,14 +13,16 @@ export default function LoginPage() {
   const [backendUrl, setBackendUrl] = useState('http://localhost:3001');
 
   useEffect(() => {
-    // Read backend URL from current origin if hosted together, or environment
-    if (typeof window !== 'undefined') {
-      const origin = window.location.hostname;
-      if (origin !== 'localhost') {
-        // If deployed to production (Railway), backend is usually served on a specific domain,
-        // or we fallback. We can read from environment.
-        setBackendUrl(process.env.NEXT_PUBLIC_API_URL || `${window.location.protocol}//${window.location.host.replace('3000', '3001')}`);
-      }
+    // Build-time env variable takes precedence (set in Railway dashboard)
+    const envUrl = process.env.NEXT_PUBLIC_API_URL;
+    if (envUrl) {
+      setBackendUrl(envUrl);
+      return;
+    }
+    // Fallback for local dev: replace port 3000 → 3001
+    if (typeof window !== 'undefined' && window.location.hostname !== 'localhost') {
+      // Production without env var: show warning but still let admin configure it
+      console.warn('[Reustafy] NEXT_PUBLIC_API_URL is not set. Configure it in Railway → Variables.');
     }
   }, []);
 
