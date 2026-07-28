@@ -92,6 +92,8 @@ export default function Dashboard() {
   const [closingsList, setClosingsList] = useState<any[]>([]);
   const [escandallosList, setEscandallosList] = useState<any[]>([]);
   const [actualAmountInput, setActualAmountInput] = useState('');
+  const [openingAmountInput, setOpeningAmountInput] = useState('');
+  const [todayOpening, setTodayOpening] = useState<any>(null);
   const [orderType, setOrderType] = useState<'dine_in' | 'takeaway'>('dine_in');
   const [billingMode, setBillingMode] = useState<'full' | 'equal' | 'itemized'>('full');
   const [splitCountInput, setSplitCountInput] = useState('2');
@@ -256,6 +258,14 @@ export default function Dashboard() {
           const expensesData = await expensesRes.json();
           setExpensesList(expensesData);
         }
+
+        const openingRes = await fetch(`${apiUrl}/api/finance/openings/today`, {
+          headers: { Authorization: `Bearer ${activeToken}` }
+        });
+        if (openingRes.ok) {
+          const openingData = await openingRes.json();
+          setTodayOpening(openingData.opening);
+        }
       }
 
       // 6. Fetch employees (available for admin/config panel)
@@ -277,6 +287,23 @@ export default function Dashboard() {
   useEffect(() => {
     if (token && apiUrl) {
       fetchData();
+
+      const eventSource = new EventSource(`${apiUrl}/api/events?token=${token}`);
+
+      eventSource.onmessage = (event) => {
+        try {
+          const data = JSON.parse(event.data);
+          if (['ORDER_CREATED', 'ORDER_STATUS_UPDATED', 'ITEM_STATUS_UPDATED', 'TABLE_STATUS_UPDATED'].includes(data.type)) {
+            fetchData();
+          }
+        } catch (err) {
+          console.error('SSE parse error:', err);
+        }
+      };
+
+      return () => {
+        eventSource.close();
+      };
     }
   }, [token, apiUrl, accountingStartDate, accountingEndDate]);
 
@@ -379,6 +406,38 @@ export default function Dashboard() {
       alert(err.message);
     } finally {
       setIsCampaignSimulating(false);
+    }
+  };
+
+  // Submit Voluntary Register Opening (Fondo de apertura)
+  const handleRegisterOpeningSubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
+    const amount = parseFloat(openingAmountInput);
+    if (isNaN(amount) || amount < 0) {
+      alert('Por favor introduce un importe de apertura válido.');
+      return;
+    }
+
+    setUpdating(true);
+    try {
+      const res = await fetch(`${apiUrl}/api/finance/openings`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          Authorization: `Bearer ${token}`
+        },
+        body: JSON.stringify({ openingAmount: amount })
+      });
+
+      if (!res.ok) throw new Error('Error al registrar apertura de caja');
+      setOpeningAmountInput('');
+      
+      await fetchData();
+      alert('Fondo de apertura de caja registrado correctamente.');
+    } catch (err: any) {
+      alert(err.message);
+    } finally {
+      setUpdating(false);
     }
   };
 
@@ -1938,13 +1997,54 @@ export default function Dashboard() {
                   {/* Right Column: Arqueo de Caja + Gastos */}
                   <div className="space-y-6">
 
+                    {/* Apertura de Caja Form (Voluntario) */}
+                    <div className="glass-panel rounded-2xl p-6 space-y-4">
+                      <div className="flex justify-between items-center">
+                        <h3 className="text-sm font-bold text-slate-900 flex items-center gap-1.5">
+                          <Coins className="h-4 w-4 text-emerald-500" /> Apertura de Caja (Voluntaria)
+                        </h3>
+                        {todayOpening && (
+                          <span className="text-[10px] font-bold bg-emerald-50 text-emerald-700 border border-emerald-200 px-2 py-0.5 rounded-full">
+                            Registrada hoy: {parseFloat(todayOpening.openingAmount).toFixed(2)}€
+                          </span>
+                        )}
+                      </div>
+                      <p className="text-xs text-slate-500 leading-normal">
+                        Fondo de cambio inicial voluntario con el que abres la caja al inicio de la jornada. Se sumará al total esperado en el arqueo diario.
+                      </p>
+                      <form onSubmit={handleRegisterOpeningSubmit} className="space-y-3">
+                        <div>
+                          <label className="text-[10px] text-slate-500 block mb-1 font-semibold uppercase">Fondo Inicial de Caja (€)</label>
+                          <div className="relative">
+                            <input 
+                              type="number"
+                              step="0.01"
+                              required
+                              placeholder="Ej. 150.00"
+                              value={openingAmountInput}
+                              onChange={(e) => setOpeningAmountInput(e.target.value)}
+                              className="w-full text-xs bg-slate-50 border border-slate-200 text-slate-800 rounded-lg p-2.5 pr-8 focus:outline-none focus:border-emerald-400"
+                            />
+                            <span className="absolute right-3 top-2.5 text-xs text-slate-400">€</span>
+                          </div>
+                        </div>
+                        <button 
+                          type="submit"
+                          disabled={updating}
+                          className="w-full bg-emerald-600 hover:bg-emerald-500 text-white text-xs font-bold py-2.5 rounded-lg transition disabled:opacity-50"
+                        >
+                          Guardar Fondo de Apertura
+                        </button>
+                      </form>
+                    </div>
+
                     {/* Arqueo Form */}
                     <div className="glass-panel rounded-2xl p-6 space-y-4">
                       <h3 className="text-sm font-bold text-slate-900 flex items-center gap-1.5">
                         <Coins className="h-4 w-4 text-indigo-500" /> Arqueo de Caja Ciego
                       </h3>
                       <p className="text-xs text-slate-500 leading-normal">
-                        Introduce el total de efectivo contado físicamente en caja. El sistema calculará el descuadre comparándolo automáticamente con las ventas del día registradas vía RLS.
+                        Introduce el total de efectivo contado físicamente en caja. El sistema calculará el descuadre considerando el fondo de apertura ({todayOpening ? `${parseFloat(todayOpening.openingAmount).toFixed(2)}€` : '0.00€'}), las ventas y los gastos.
                       </p>
                       <form onSubmit={handleRegisterClosingSubmit} className="space-y-3">
                         <div>

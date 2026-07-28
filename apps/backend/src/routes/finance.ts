@@ -1,5 +1,5 @@
 import { FastifyInstance } from 'fastify';
-import { runInTenantContext, orders, registerClosings, activityLogs, expenses } from '@reustafy/database';
+import { runInTenantContext, orders, registerClosings, registerOpenings, activityLogs, expenses, tenantFixedCosts } from '@reustafy/database';
 import { eq, and, gte, lte, desc } from 'drizzle-orm';
 import { authenticateJWT } from '../middleware/auth';
 import { requireTier } from '../middleware/subscription';
@@ -15,30 +15,48 @@ export async function financeRoutes(fastify: FastifyInstance) {
 
     try {
       const reports = await runInTenantContext(tenantId, async (tx: any) => {
-        // Query today's revenue to dynamically adjust P&L
-        const today = new Date();
-        today.setHours(0,0,0,0);
-        const todayOrders = await tx
+        // Query paid orders
+        const paidOrdersList = await tx
           .select({ totalAmount: orders.totalAmount })
           .from(orders)
-          .where(and(eq(orders.status, 'paid'), gte(orders.updatedAt, today)));
+          .where(eq(orders.status, 'paid'));
 
-        const todayRevenue = todayOrders.reduce((acc: number, o: any) => acc + parseFloat(o.totalAmount), 0);
+        const totalRevenueFromOrders = paidOrdersList.reduce((acc: number, o: any) => acc + parseFloat(o.totalAmount), 0);
+
+        // Revenue baseline for simulation (defaults to 24500 if no sales yet)
+        const totalRevenue = totalRevenueFromOrders > 0 ? totalRevenueFromOrders : 24500.00;
         
-        // Base monthly P&L
-        const baseRevenue = 24500.00 + todayRevenue;
-        const foodCost = baseRevenue * 0.25; // 25% cost
-        const laborCost = 9800.00;
-        const otherExpenses = 3200.00;
-        const netProfit = baseRevenue - foodCost - laborCost - otherExpenses;
+        // Variable food cost estimated at 25% of revenue
+        const foodCost = totalRevenue * 0.25;
+
+        // Fetch tenant fixed costs
+        const fixedCostsList = await tx.select().from(tenantFixedCosts);
+        
+        let laborCost = 9800.00;
+        let otherExpenses = 3200.00;
+
+        if (fixedCostsList.length > 0) {
+          laborCost = 0;
+          otherExpenses = 0;
+          for (const fc of fixedCostsList) {
+            const amt = parseFloat(fc.monthlyAmount);
+            if (fc.name.toLowerCase().includes('nómina') || fc.name.toLowerCase().includes('personal') || fc.name.toLowerCase().includes('labor')) {
+              laborCost += amt;
+            } else {
+              otherExpenses += amt;
+            }
+          }
+        }
+
+        const netProfit = totalRevenue - foodCost - laborCost - otherExpenses;
 
         return {
-          totalRevenue: baseRevenue.toFixed(2),
+          totalRevenue: totalRevenue.toFixed(2),
           foodCost: foodCost.toFixed(2),
           laborCost: laborCost.toFixed(2),
           otherExpenses: otherExpenses.toFixed(2),
           netProfit: netProfit.toFixed(2),
-          forecastNextMonthRevenue: (baseRevenue * 1.1).toFixed(2),
+          forecastNextMonthRevenue: (totalRevenue * 1.1).toFixed(2),
           confidenceInterval: '94.2%'
         };
       });
@@ -55,6 +73,70 @@ export async function financeRoutes(fastify: FastifyInstance) {
     }
   });
 
+  // 1b. Get Tenant Fixed Costs
+  fastify.get('/fixed-costs', async (req, reply) => {
+    const tenantId = req.userSession!.tenantId;
+    try {
+      const list = await runInTenantContext(tenantId, async (tx: any) => {
+        return await tx.select().from(tenantFixedCosts);
+      });
+      return list;
+    } catch (error) {
+      fastify.log.error(error);
+      return reply.code(500).send({ error: 'Failed to retrieve fixed costs' });
+    }
+  });
+
+  // 1c. Add Tenant Fixed Cost
+  fastify.post('/fixed-costs', async (req, reply) => {
+    const tenantId = req.userSession!.tenantId;
+    const { name, monthlyAmount } = req.body as { name: string; monthlyAmount: number };
+
+    if (!name || monthlyAmount === undefined || monthlyAmount <= 0) {
+      return reply.code(400).send({ error: 'name and positive monthlyAmount are required' });
+    }
+
+    try {
+      const inserted = await runInTenantContext(tenantId, async (tx: any) => {
+        const [fc] = await tx
+          .insert(tenantFixedCosts)
+          .values({
+            tenantId,
+            name,
+            monthlyAmount: monthlyAmount.toFixed(2)
+          })
+          .returning();
+        return fc;
+      });
+
+      return reply.code(201).send(inserted);
+    } catch (error) {
+      fastify.log.error(error);
+      return reply.code(500).send({ error: 'Failed to create fixed cost' });
+    }
+  });
+
+  // 1d. Delete Tenant Fixed Cost
+  fastify.delete('/fixed-costs/:id', async (req, reply) => {
+    const tenantId = req.userSession!.tenantId;
+    const { id } = req.params as { id: string };
+
+    try {
+      const deleted = await runInTenantContext(tenantId, async (tx: any) => {
+        const [fc] = await tx
+          .delete(tenantFixedCosts)
+          .where(eq(tenantFixedCosts.id, id))
+          .returning();
+        return fc;
+      });
+
+      return deleted;
+    } catch (error) {
+      fastify.log.error(error);
+      return reply.code(500).send({ error: 'Failed to delete fixed cost' });
+    }
+  });
+
   // 2. Get recipe costing (Escandallos)
   fastify.get('/costing', async (req, reply) => {
     return {
@@ -65,6 +147,67 @@ export async function financeRoutes(fastify: FastifyInstance) {
         { recipeName: 'Hamburguesa Gourmet', supplierCost: 3.50, menuPrice: 14.00, marginPercent: 75.0 }
       ]
     };
+  });
+
+  // 2b. Submit Voluntary Register Opening (Fondo de apertura de caja diario)
+  fastify.post('/openings', async (req, reply) => {
+    const tenantId = req.userSession!.tenantId;
+    const userId = req.userSession!.userId;
+    const { openingAmount } = req.body as { openingAmount: number };
+
+    if (openingAmount === undefined || openingAmount < 0) {
+      return reply.code(400).send({ error: 'openingAmount must be a non-negative number' });
+    }
+
+    try {
+      const inserted = await runInTenantContext(tenantId, async (tx: any) => {
+        const [opening] = await tx
+          .insert(registerOpenings)
+          .values({
+            tenantId,
+            userId,
+            openingAmount: openingAmount.toFixed(2)
+          })
+          .returning();
+
+        await tx.insert(activityLogs).values({
+          tenantId,
+          userId,
+          actionDescription: `Fondo de apertura de caja registrado: ${openingAmount.toFixed(2)}€`
+        });
+
+        return opening;
+      });
+
+      return reply.code(201).send(inserted);
+    } catch (error) {
+      fastify.log.error(error);
+      return reply.code(500).send({ error: 'Failed to record register opening' });
+    }
+  });
+
+  // 2c. Get today's Register Opening
+  fastify.get('/openings/today', async (req, reply) => {
+    const tenantId = req.userSession!.tenantId;
+    try {
+      const today = new Date();
+      today.setHours(0,0,0,0);
+
+      const opening = await runInTenantContext(tenantId, async (tx: any) => {
+        const result = await tx
+          .select()
+          .from(registerOpenings)
+          .where(gte(registerOpenings.createdAt, today))
+          .orderBy(desc(registerOpenings.createdAt))
+          .limit(1);
+        return result[0] || null;
+      });
+
+      return { opening };
+    } catch (error) {
+      fastify.log.error(error);
+      return reply.code(500).send({ error: 'Failed to retrieve today opening' });
+    }
   });
 
   // 3. Submit a Blind Register Closing (Arqueo de caja ciego)
@@ -79,10 +222,20 @@ export async function financeRoutes(fastify: FastifyInstance) {
 
     try {
       const closing = await runInTenantContext(tenantId, async (tx: any) => {
-        // Find total paid orders today
         const today = new Date();
         today.setHours(0,0,0,0);
 
+        // Find today's register opening float (if any)
+        const todayOpenings = await tx
+          .select({ openingAmount: registerOpenings.openingAmount })
+          .from(registerOpenings)
+          .where(gte(registerOpenings.createdAt, today))
+          .orderBy(desc(registerOpenings.createdAt))
+          .limit(1);
+
+        const openingFloat = todayOpenings.length > 0 ? parseFloat(todayOpenings[0].openingAmount) : 0.00;
+
+        // Find total paid orders today
         const paidOrders = await tx
           .select({
             totalAmount: orders.totalAmount
@@ -105,10 +258,10 @@ export async function financeRoutes(fastify: FastifyInstance) {
             gte(expenses.createdAt, today)
           );
 
-        // Calculate expected sum (Ventas - Gastos)
+        // Calculate expected sum (Fondo Apertura + Ventas - Gastos)
         const totalSales = paidOrders.reduce((acc: number, order: any) => acc + parseFloat(order.totalAmount), 0);
         const totalExpenses = todayExpenses.reduce((acc: number, exp: any) => acc + parseFloat(exp.amount), 0);
-        const expected = totalSales - totalExpenses;
+        const expected = openingFloat + totalSales - totalExpenses;
         
         const discrepancy = actualAmount - expected;
 
@@ -125,7 +278,7 @@ export async function financeRoutes(fastify: FastifyInstance) {
           .returning();
 
         // Create log
-        const descText = `Arqueo de caja ciego realizado. Efectivo contado: ${actualAmount.toFixed(2)}€, Esperado (Ventas ${totalSales.toFixed(2)} - Gastos ${totalExpenses.toFixed(2)}): ${expected.toFixed(2)}€, Descuadre: ${discrepancy.toFixed(2)}€`;
+        const descText = `Arqueo de caja ciego realizado. Efectivo contado: ${actualAmount.toFixed(2)}€, Esperado (Apertura ${openingFloat.toFixed(2)} + Ventas ${totalSales.toFixed(2)} - Gastos ${totalExpenses.toFixed(2)}): ${expected.toFixed(2)}€, Descuadre: ${discrepancy.toFixed(2)}€`;
         await tx.insert(activityLogs).values({
           tenantId,
           userId,
@@ -134,6 +287,7 @@ export async function financeRoutes(fastify: FastifyInstance) {
 
         return {
           ...inserted,
+          openingFloat: openingFloat.toFixed(2),
           totalSales: totalSales.toFixed(2),
           totalExpenses: totalExpenses.toFixed(2)
         };

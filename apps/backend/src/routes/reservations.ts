@@ -113,8 +113,23 @@ export async function reservationRoutes(fastify: FastifyInstance) {
   // PUBLIC ENDPOINTS (External Widget)
   // ==========================================
 
+  const publicReservationIpMap = new Map<string, { count: number; resetTime: number }>();
+
   // Public Booking Widget endpoint (Bypasses standard JWT token checks, uses tenantId from request body)
   fastify.post('/public/reservations', async (req, reply) => {
+    const clientIp = req.ip || req.socket.remoteAddress || 'unknown';
+    const now = Date.now();
+    const entry = publicReservationIpMap.get(clientIp);
+
+    if (entry && now < entry.resetTime) {
+      if (entry.count >= 5) {
+        return reply.code(429).send({ error: 'Demasiadas solicitudes de reserva. Inténtalo de nuevo en unos minutos.' });
+      }
+      entry.count++;
+    } else {
+      publicReservationIpMap.set(clientIp, { count: 1, resetTime: now + 60000 });
+    }
+
     const { tenantId, customerName, customerEmail, customerPhone, partySize, reservationTime, allergies } = req.body as any;
 
     if (!tenantId || !customerName || !partySize || !reservationTime) {

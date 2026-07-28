@@ -2,6 +2,7 @@ import { FastifyInstance } from 'fastify';
 import { runInTenantContext, tables, activityLogs, orders } from '@reustafy/database';
 import { eq, and, ne } from 'drizzle-orm';
 import { authenticateJWT } from '../middleware/auth';
+import { notifyTenant } from '../events/event-bus';
 
 export async function tableRoutes(fastify: FastifyInstance) {
   
@@ -65,6 +66,8 @@ export async function tableRoutes(fastify: FastifyInstance) {
 
         return updated;
       });
+
+      notifyTenant(tenantId, 'TABLE_STATUS_UPDATED', updatedTable);
 
       return updatedTable;
     } catch (error: any) {

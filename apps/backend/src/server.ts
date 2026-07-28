@@ -19,8 +19,9 @@ const server = fastify({
 });
 
 // Register CORS
+const allowedOrigins = process.env.ALLOWED_ORIGINS ? process.env.ALLOWED_ORIGINS.split(',').map(s => s.trim()) : '*';
 server.register(cors, {
-  origin: '*', // Allow all origins for dev/SaaS testing
+  origin: allowedOrigins,
   methods: ['GET', 'POST', 'PUT', 'PATCH', 'DELETE', 'OPTIONS']
 });
 
@@ -33,6 +34,8 @@ import { reservationRoutes } from './routes/reservations';
 import { financeRoutes } from './routes/finance';
 import { loyaltyRoutes } from './routes/loyalty';
 import { configRoutes } from './routes/config';
+import { eventsRoutes } from './routes/events';
+import { menuRoutes } from './routes/menu';
 
 // Register Routes
 server.register(authRoutes, { prefix: '/api/auth' });
@@ -43,6 +46,8 @@ server.register(reservationRoutes, { prefix: '/api' });
 server.register(financeRoutes, { prefix: '/api/finance' });
 server.register(loyaltyRoutes, { prefix: '/api' });
 server.register(configRoutes, { prefix: '/api' });
+server.register(eventsRoutes, { prefix: '/api' });
+server.register(menuRoutes, { prefix: '/api' });
 
 // Health Check
 server.get('/health', async () => {

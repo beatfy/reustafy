@@ -2,6 +2,7 @@ import { FastifyInstance } from 'fastify';
 import { runInTenantContext, orders, orderItems, tables, activityLogs } from '@reustafy/database';
 import { eq, or, and, inArray } from 'drizzle-orm';
 import { authenticateJWT } from '../middleware/auth';
+import { notifyTenant } from '../events/event-bus';
 
 interface CreateOrderBody {
   tableId: string;
@@ -84,6 +85,8 @@ export async function orderRoutes(fastify: FastifyInstance) {
 
         return insertedOrder;
       });
+
+      notifyTenant(tenantId, 'ORDER_CREATED', newOrder);
 
       return reply.code(201).send(newOrder);
     } catch (error: any) {
@@ -237,6 +240,8 @@ export async function orderRoutes(fastify: FastifyInstance) {
         return updatedOrder;
       });
 
+      notifyTenant(tenantId, 'ORDER_STATUS_UPDATED', result);
+
       return result;
     } catch (error: any) {
       fastify.log.error(error);
@@ -276,6 +281,8 @@ export async function orderRoutes(fastify: FastifyInstance) {
 
         return updatedItem;
       });
+
+      notifyTenant(tenantId, 'ITEM_STATUS_UPDATED', result);
 
       return result;
     } catch (error: any) {

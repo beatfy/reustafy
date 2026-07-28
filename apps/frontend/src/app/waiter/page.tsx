@@ -27,15 +27,15 @@ export default function WaiterPWA() {
   const [sending, setSending] = useState(false);
   const [success, setSuccess] = useState(false);
 
-  // Available Menu items for mock order taking
-  const menuItems = [
+  // Available Menu items (dynamic from DB with default fallback)
+  const [menuItemsList, setMenuItemsList] = useState<Array<{ itemName: string; price: number }>>([
     { itemName: 'Patatas Bravas', price: 6.50 },
     { itemName: 'Solomillo al Whisky', price: 14.50 },
     { itemName: 'Hamburguesa Gourmet', price: 14.00 },
     { itemName: 'Caña Cruzcampo', price: 2.30 },
     { itemName: 'Refresco Cola', price: 2.50 },
     { itemName: 'Tarta de Queso', price: 5.50 }
-  ];
+  ]);
 
   useEffect(() => {
     if (typeof window !== 'undefined') {
@@ -73,6 +73,23 @@ export default function WaiterPWA() {
         const resData = await resRes.json();
         setReservationsList(resData);
       }
+
+      // Fetch Dynamic Menu Items
+      const menuRes = await fetch(`${apiUrl}/api/menu`, {
+        headers: { Authorization: `Bearer ${activeToken}` }
+      });
+      if (menuRes.ok) {
+        const menuData = await menuRes.json();
+        if (menuData.items && menuData.items.length > 0) {
+          const formattedItems = menuData.items
+            .filter((i: any) => i.available)
+            .map((i: any) => ({
+              itemName: i.itemName,
+              price: parseFloat(i.price)
+            }));
+          setMenuItemsList(formattedItems);
+        }
+      }
     } catch (err) {
       console.error(err);
     } finally {
@@ -83,6 +100,23 @@ export default function WaiterPWA() {
   useEffect(() => {
     if (token) {
       fetchTables(token);
+
+      const eventSource = new EventSource(`${apiUrl}/api/events?token=${token}`);
+      
+      eventSource.onmessage = (event) => {
+        try {
+          const data = JSON.parse(event.data);
+          if (['TABLE_STATUS_UPDATED', 'ORDER_CREATED', 'ORDER_STATUS_UPDATED'].includes(data.type)) {
+            fetchTables(token);
+          }
+        } catch (err) {
+          console.error('SSE parse error:', err);
+        }
+      };
+
+      return () => {
+        eventSource.close();
+      };
     }
   }, [token, apiUrl]);
 
@@ -133,10 +167,10 @@ export default function WaiterPWA() {
   };
 
   return (
-    <div className="min-h-screen bg-[#090d16] text-slate-100 pb-8 flex flex-col">
+    <div className="min-h-screen bg-dark-bg text-slate-100 pb-8 flex flex-col">
       
       {/* Navbar PWA */}
-      <header className="border-b border-white/5 bg-slate-950/40 backdrop-blur-md px-4 py-3 sticky top-0 z-20 flex justify-between items-center">
+      <header className="border-b border-dark-border bg-dark-header backdrop-blur-md px-4 py-3 sticky top-0 z-20 flex justify-between items-center">
         <button onClick={() => router.push('/dashboard')} className="flex items-center gap-1 text-slate-400 hover:text-white text-xs font-semibold">
           <ArrowLeft className="h-4 w-4" /> Volver
         </button>
@@ -234,7 +268,7 @@ export default function WaiterPWA() {
             <div className="space-y-2">
               <h3 className="text-xs font-bold text-slate-400 uppercase tracking-widest">Platos y Bebidas</h3>
               <div className="grid grid-cols-2 gap-2">
-                {menuItems.map(item => (
+                {menuItemsList.map(item => (
                   <button
                     key={item.itemName}
                     onClick={() => addToCart(item)}

@@ -87,6 +87,23 @@ export default function KitchenKDS() {
   useEffect(() => {
     if (token) {
       fetchKDSOrders(token);
+
+      const eventSource = new EventSource(`${apiUrl}/api/events?token=${token}`);
+      
+      eventSource.onmessage = (event) => {
+        try {
+          const data = JSON.parse(event.data);
+          if (['ORDER_CREATED', 'ORDER_STATUS_UPDATED', 'ITEM_STATUS_UPDATED'].includes(data.type)) {
+            fetchKDSOrders(token);
+          }
+        } catch (err) {
+          console.error('SSE parse error:', err);
+        }
+      };
+
+      return () => {
+        eventSource.close();
+      };
     }
   }, [token, apiUrl]);
 
@@ -138,10 +155,10 @@ export default function KitchenKDS() {
   };
 
   return (
-    <div className="min-h-screen bg-[#090d16] text-slate-100 pb-8 flex flex-col">
+    <div className="min-h-screen bg-dark-bg text-slate-100 pb-8 flex flex-col">
       
       {/* Navbar KDS */}
-      <header className="border-b border-white/5 bg-slate-950/40 backdrop-blur-md px-6 py-4 sticky top-0 z-20 flex justify-between items-center">
+      <header className="border-b border-dark-border bg-dark-header backdrop-blur-md px-6 py-4 sticky top-0 z-20 flex justify-between items-center">
         <button onClick={() => router.push('/dashboard')} className="flex items-center gap-1 text-slate-400 hover:text-white text-xs font-semibold">
           <ArrowLeft className="h-4 w-4" /> Volver
         </button>

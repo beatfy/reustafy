@@ -35,11 +35,15 @@ export const users = pgTable('users', {
   id: uuid('id').primaryKey().defaultRandom(),
   tenantId: uuid('tenant_id').notNull().references(() => tenants.id, { onDelete: 'cascade' }),
   name: varchar('name', { length: 255 }).notNull(),
-  email: varchar('email', { length: 255 }).notNull().unique(),
+  email: varchar('email', { length: 255 }).notNull(),
   passwordHash: varchar('password_hash', { length: 255 }).notNull(),
   role: userRoleEnum('role').notNull().default('waiter'),
   active: boolean('active').notNull().default(true),
   createdAt: timestamp('created_at', { withTimezone: true }).defaultNow()
+}, (table) => {
+  return {
+    tenantEmailIdx: uniqueIndex('users_tenant_email_idx').on(table.tenantId, table.email)
+  };
 });
 
 // 4. Tables Table
@@ -133,6 +137,20 @@ export const registerClosings = pgTable('register_closings', {
   createdAt: timestamp('created_at', { withTimezone: true }).defaultNow()
 });
 
+// 10b. Register Openings Table (Fondo de apertura de caja diario opcional)
+export const registerOpenings = pgTable('register_openings', {
+  id: uuid('id').primaryKey().defaultRandom(),
+  tenantId: uuid('tenant_id').notNull().references(() => tenants.id, { onDelete: 'cascade' }),
+  userId: uuid('user_id').references(() => users.id, { onDelete: 'set null' }),
+  openingAmount: decimal('opening_amount', { precision: 10, scale: 2 }).notNull(),
+  createdAt: timestamp('created_at', { withTimezone: true }).defaultNow()
+});
+
+export const registerOpeningsRelations = relations(registerOpenings, ({ one }) => ({
+  tenant: one(tenants, { fields: [registerOpenings.tenantId], references: [tenants.id] }),
+  user: one(users, { fields: [registerOpenings.userId], references: [users.id] })
+}));
+
 // Relations Definitions (Drizzle ORM helper)
 export const tenantsRelations = relations(tenants, ({ many }) => ({
   users: many(users),
@@ -199,4 +217,49 @@ export const expenses = pgTable('expenses', {
 export const expensesRelations = relations(expenses, ({ one }) => ({
   tenant: one(tenants, { fields: [expenses.tenantId], references: [tenants.id] })
 }));
+
+// 12. Categories Table
+export const categories = pgTable('categories', {
+  id: uuid('id').primaryKey().defaultRandom(),
+  tenantId: uuid('tenant_id').notNull().references(() => tenants.id, { onDelete: 'cascade' }),
+  name: varchar('name', { length: 255 }).notNull(),
+  createdAt: timestamp('created_at', { withTimezone: true }).defaultNow()
+});
+
+export const categoriesRelations = relations(categories, ({ one, many }) => ({
+  tenant: one(tenants, { fields: [categories.tenantId], references: [tenants.id] }),
+  items: many(menuItems)
+}));
+
+// 13. Menu Items Table
+export const menuItems = pgTable('menu_items', {
+  id: uuid('id').primaryKey().defaultRandom(),
+  tenantId: uuid('tenant_id').notNull().references(() => tenants.id, { onDelete: 'cascade' }),
+  categoryId: uuid('category_id').references(() => categories.id, { onDelete: 'set null' }),
+  itemName: varchar('item_name', { length: 255 }).notNull(),
+  description: text('description'),
+  price: decimal('price', { precision: 10, scale: 2 }).notNull(),
+  available: boolean('available').notNull().default(true),
+  allergens: varchar('allergens', { length: 255 }),
+  createdAt: timestamp('created_at', { withTimezone: true }).defaultNow()
+});
+
+export const menuItemsRelations = relations(menuItems, ({ one }) => ({
+  tenant: one(tenants, { fields: [menuItems.tenantId], references: [tenants.id] }),
+  category: one(categories, { fields: [menuItems.categoryId], references: [categories.id] })
+}));
+
+// 14. Tenant Fixed Costs Table
+export const tenantFixedCosts = pgTable('tenant_fixed_costs', {
+  id: uuid('id').primaryKey().defaultRandom(),
+  tenantId: uuid('tenant_id').notNull().references(() => tenants.id, { onDelete: 'cascade' }),
+  name: varchar('name', { length: 255 }).notNull(),
+  monthlyAmount: decimal('monthly_amount', { precision: 10, scale: 2 }).notNull(),
+  createdAt: timestamp('created_at', { withTimezone: true }).defaultNow()
+});
+
+export const tenantFixedCostsRelations = relations(tenantFixedCosts, ({ one }) => ({
+  tenant: one(tenants, { fields: [tenantFixedCosts.tenantId], references: [tenants.id] })
+}));
+
 
