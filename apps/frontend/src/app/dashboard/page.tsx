@@ -1502,28 +1502,28 @@ export default function Dashboard() {
                   <>
                     <div className="overflow-y-auto space-y-3 pr-1 max-h-[350px]">
                     {reservationsList.length === 0 ? (
-                      <p className="text-xs text-slate-500 text-center py-6">No hay reservas programadas.</p>
+                      <p className="text-xs text-slate-500 dark:text-slate-400 text-center py-6 font-medium">No hay reservas programadas.</p>
                     ) : (
                     reservationsList.map((res) => {
                       const resTime = new Date(res.reservationTime).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
                       return (
-                        <div key={res.id} className="p-3 rounded-lg border border-slate-100 bg-white flex justify-between items-center shadow-sm">
+                        <div key={res.id} className="p-3.5 rounded-xl border border-slate-200 dark:border-slate-700 bg-slate-50 dark:bg-slate-800 flex justify-between items-center shadow-2xs">
                           <div>
-                            <span className="text-sm font-semibold text-slate-900 block">{res.customerName}</span>
-                            <span className="text-[10px] text-indigo-600 flex items-center gap-1 mt-0.5">
+                            <span className="text-sm font-black text-slate-900 dark:text-white block">{res.customerName}</span>
+                            <span className="text-xs text-indigo-600 dark:text-indigo-400 font-bold flex items-center gap-1 mt-0.5">
                               <Clock className="h-3 w-3" /> {resTime} • {res.partySize} personas
                             </span>
                             {res.allergies && (
-                              <span className="block text-[10px] text-rose-600 font-bold mt-1">
+                              <span className="block text-xs text-rose-600 dark:text-rose-400 font-black mt-1">
                                 ⚠️ Alergias: {res.allergies}
                               </span>
                             )}
                             {res.tableId ? (
-                              <span className="inline-block text-[9px] uppercase font-bold text-emerald-600 mt-1">
+                              <span className="inline-block text-[10px] uppercase font-black text-emerald-600 dark:text-emerald-400 mt-1">
                                 Asignada a Mesa {tablesList.find(t => t.id === res.tableId)?.tableNumber || '?' }
                               </span>
                             ) : (
-                              <span className="inline-block text-[9px] uppercase font-bold text-amber-600 mt-1">
+                              <span className="inline-block text-[10px] uppercase font-black text-amber-600 dark:text-amber-400 mt-1">
                                 Sin Asignar
                               </span>
                             )}
@@ -1532,7 +1532,7 @@ export default function Dashboard() {
                           {!res.tableId && (
                             <button
                               onClick={() => setAssigningReservation(res)}
-                              className="text-[10px] bg-slate-900 hover:bg-slate-700 text-white font-bold py-1 px-2.5 rounded-lg transition"
+                              className="text-xs bg-slate-900 dark:bg-slate-700 hover:bg-slate-700 dark:hover:bg-slate-600 text-white font-bold py-1.5 px-3 rounded-lg transition"
                             >
                               Asignar
                             </button>
@@ -1576,25 +1576,25 @@ export default function Dashboard() {
 
               {/* Box 2: Activity Logs */}
               <section className="glass-panel rounded-2xl p-6 flex flex-col gap-4 max-h-[380px]">
-                <div className="flex justify-between items-center pb-2 border-b border-slate-100">
-                  <h2 className="text-md font-bold text-slate-900 flex items-center gap-1.5">
-                    <History className="h-4.5 w-4.5 text-indigo-500" /> Log de Actividad
+                <div className="flex justify-between items-center pb-2 border-b border-slate-100 dark:border-slate-800">
+                  <h2 className="text-md font-bold text-slate-900 dark:text-white flex items-center gap-1.5">
+                    <History className="h-4.5 w-4.5 text-indigo-500 dark:text-indigo-400" /> Log de Actividad
                   </h2>
-                  <span className="text-[9px] uppercase bg-emerald-50 text-emerald-700 border border-emerald-200 font-bold px-2 py-0.5 rounded-full">En tiempo real</span>
+                  <span className="text-[10px] uppercase bg-emerald-50 dark:bg-emerald-950/60 text-emerald-700 dark:text-emerald-300 border border-emerald-200 dark:border-emerald-700/60 font-bold px-2 py-0.5 rounded-full">En tiempo real</span>
                 </div>
 
                 <div className="overflow-y-auto space-y-3 pr-1 flex-1">
                   {logsList.length === 0 ? (
-                    <p className="text-xs text-slate-400 text-center py-6">No hay registros de actividad aún.</p>
+                    <p className="text-xs text-slate-500 dark:text-slate-400 text-center py-6 font-medium">No hay registros de actividad aún.</p>
                   ) : (
                     logsList.map((log) => {
                       const logTime = new Date(log.timestamp).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit', second: '2-digit' });
                       return (
-                        <div key={log.id} className="text-xs border-b border-slate-100 pb-2 last:border-b-0">
-                          <p className="text-slate-700 leading-snug">{log.actionDescription}</p>
-                          <div className="flex justify-between text-[10px] text-slate-400 mt-1">
-                            <span className="font-semibold text-slate-500">{log.userName || 'Sistema'} ({log.userRole || 'Admin'})</span>
-                            <span>{logTime}</span>
+                        <div key={log.id} className="text-xs border-b border-slate-100 dark:border-slate-800/80 pb-2.5 last:border-b-0">
+                          <p className="text-slate-800 dark:text-slate-200 font-medium leading-snug">{log.actionDescription}</p>
+                          <div className="flex justify-between text-[10px] text-slate-500 dark:text-slate-400 mt-1">
+                            <span className="font-bold text-slate-600 dark:text-slate-400">{log.userName || 'Sistema'} ({log.userRole || 'Admin'})</span>
+                            <span className="font-semibold">{logTime}</span>
                           </div>
                         </div>
                       );

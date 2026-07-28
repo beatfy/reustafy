@@ -18,7 +18,7 @@ export default function RootLayout({
         <link rel="preconnect" href="https://fonts.gstatic.com" crossOrigin="anonymous" />
         <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700&display=swap" rel="stylesheet" />
         {/* PWA Tags */}
-        <meta name="theme-color" content="#090d16" />
+        <meta name="theme-color" content="#f8fafc" />
         <link rel="manifest" href="/manifest.json" />
       </head>
       <body>
