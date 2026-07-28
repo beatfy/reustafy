@@ -152,9 +152,11 @@ export async function financeRoutes(fastify: FastifyInstance) {
   fastify.post('/openings', async (req, reply) => {
     const tenantId = req.userSession!.tenantId;
     const userId = req.userSession!.userId;
-    const { openingAmount } = req.body as { openingAmount: number };
+    const { openingAmount } = req.body as { openingAmount: any };
 
-    if (openingAmount === undefined || openingAmount < 0) {
+    const numAmount = parseFloat(openingAmount);
+
+    if (isNaN(numAmount) || numAmount < 0) {
       return reply.code(400).send({ error: 'openingAmount must be a non-negative number' });
     }
 
@@ -165,23 +167,23 @@ export async function financeRoutes(fastify: FastifyInstance) {
           .values({
             tenantId,
             userId,
-            openingAmount: openingAmount.toFixed(2)
+            openingAmount: numAmount.toFixed(2)
           })
           .returning();
 
         await tx.insert(activityLogs).values({
           tenantId,
           userId,
-          actionDescription: `Fondo de apertura de caja registrado: ${openingAmount.toFixed(2)}€`
+          actionDescription: `Fondo de apertura de caja registrado: ${numAmount.toFixed(2)}€`
         });
 
         return opening;
       });
 
       return reply.code(201).send(inserted);
-    } catch (error) {
+    } catch (error: any) {
       fastify.log.error(error);
-      return reply.code(500).send({ error: 'Failed to record register opening' });
+      return reply.code(500).send({ error: error?.message || 'Failed to record register opening' });
     }
   });
 

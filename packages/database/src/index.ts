@@ -16,6 +16,68 @@ export function getDb(connectionString?: string) {
       ssl: connStr.includes('localhost') ? false : { rejectUnauthorized: false }
     });
     db = drizzle(pool, { schema });
+
+    // Auto-ensure new tables exist in PostgreSQL
+    pool.query(`
+      CREATE TABLE IF NOT EXISTS "register_openings" (
+        "id" uuid PRIMARY KEY DEFAULT gen_random_uuid(),
+        "tenant_id" uuid NOT NULL REFERENCES "tenants"("id") ON DELETE CASCADE,
+        "user_id" uuid REFERENCES "users"("id") ON DELETE SET NULL,
+        "opening_amount" numeric(10, 2) NOT NULL,
+        "created_at" timestamp with time zone DEFAULT now()
+      );
+      ALTER TABLE "register_openings" ENABLE ROW LEVEL SECURITY;
+      DO $$ BEGIN
+        IF NOT EXISTS (SELECT 1 FROM pg_policies WHERE policyname = 'tenant_isolation_policy' AND tablename = 'register_openings') THEN
+          CREATE POLICY tenant_isolation_policy ON "register_openings" FOR ALL USING (tenant_id = NULLIF(current_setting('app.current_tenant_id', true), '')::uuid OR current_setting('app.bypass_rls', true) = 'true');
+        END IF;
+      END $$;
+
+      CREATE TABLE IF NOT EXISTS "categories" (
+        "id" uuid PRIMARY KEY DEFAULT gen_random_uuid(),
+        "tenant_id" uuid NOT NULL REFERENCES "tenants"("id") ON DELETE CASCADE,
+        "name" varchar(255) NOT NULL,
+        "created_at" timestamp with time zone DEFAULT now()
+      );
+      ALTER TABLE "categories" ENABLE ROW LEVEL SECURITY;
+      DO $$ BEGIN
+        IF NOT EXISTS (SELECT 1 FROM pg_policies WHERE policyname = 'tenant_isolation_policy' AND tablename = 'categories') THEN
+          CREATE POLICY tenant_isolation_policy ON "categories" FOR ALL USING (tenant_id = NULLIF(current_setting('app.current_tenant_id', true), '')::uuid OR current_setting('app.bypass_rls', true) = 'true');
+        END IF;
+      END $$;
+
+      CREATE TABLE IF NOT EXISTS "menu_items" (
+        "id" uuid PRIMARY KEY DEFAULT gen_random_uuid(),
+        "tenant_id" uuid NOT NULL REFERENCES "tenants"("id") ON DELETE CASCADE,
+        "category_id" uuid REFERENCES "categories"("id") ON DELETE SET NULL,
+        "item_name" varchar(255) NOT NULL,
+        "description" text,
+        "price" numeric(10, 2) NOT NULL,
+        "available" boolean NOT NULL DEFAULT true,
+        "allergens" varchar(255),
+        "created_at" timestamp with time zone DEFAULT now()
+      );
+      ALTER TABLE "menu_items" ENABLE ROW LEVEL SECURITY;
+      DO $$ BEGIN
+        IF NOT EXISTS (SELECT 1 FROM pg_policies WHERE policyname = 'tenant_isolation_policy' AND tablename = 'menu_items') THEN
+          CREATE POLICY tenant_isolation_policy ON "menu_items" FOR ALL USING (tenant_id = NULLIF(current_setting('app.current_tenant_id', true), '')::uuid OR current_setting('app.bypass_rls', true) = 'true');
+        END IF;
+      END $$;
+
+      CREATE TABLE IF NOT EXISTS "tenant_fixed_costs" (
+        "id" uuid PRIMARY KEY DEFAULT gen_random_uuid(),
+        "tenant_id" uuid NOT NULL REFERENCES "tenants"("id") ON DELETE CASCADE,
+        "name" varchar(255) NOT NULL,
+        "monthly_amount" numeric(10, 2) NOT NULL,
+        "created_at" timestamp with time zone DEFAULT now()
+      );
+      ALTER TABLE "tenant_fixed_costs" ENABLE ROW LEVEL SECURITY;
+      DO $$ BEGIN
+        IF NOT EXISTS (SELECT 1 FROM pg_policies WHERE policyname = 'tenant_isolation_policy' AND tablename = 'tenant_fixed_costs') THEN
+          CREATE POLICY tenant_isolation_policy ON "tenant_fixed_costs" FOR ALL USING (tenant_id = NULLIF(current_setting('app.current_tenant_id', true), '')::uuid OR current_setting('app.bypass_rls', true) = 'true');
+        END IF;
+      END $$;
+    `).catch(err => console.error('Auto table ensure warning:', err.message));
   }
   return db;
 }
