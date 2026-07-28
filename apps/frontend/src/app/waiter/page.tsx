@@ -188,9 +188,6 @@ export default function WaiterPWA() {
     } finally {
       setSending(false);
     }
-  };
-
-  return (
   const getTableCardStyle = (status: Table['status']) => {
     switch (status) {
       case 'free':
