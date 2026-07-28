@@ -2,7 +2,7 @@
 
 import React, { useEffect, useState } from 'react';
 import { useRouter } from 'next/navigation';
-import { ChefHat, ArrowLeft, RefreshCw, Clock, CheckCircle2 } from 'lucide-react';
+import { ChefHat, ArrowLeft, RefreshCw, Clock, CheckCircle2, Sun, Moon } from 'lucide-react';
 
 interface OrderItem {
   id: string;
@@ -25,6 +25,7 @@ export default function KitchenKDS() {
   const [token, setToken] = useState<string | null>(null);
   const [user, setUser] = useState<any>(null);
   const [apiUrl, setApiUrl] = useState('');
+  const [darkMode, setDarkMode] = useState(false);
   
   const [ordersList, setOrdersList] = useState<Order[]>([]);
   const [tablesList, setTablesList] = useState<any[]>([]);
@@ -37,6 +38,15 @@ export default function KitchenKDS() {
       const storedToken = localStorage.getItem('reustafy_token');
       const storedUser = localStorage.getItem('reustafy_user');
       const storedApiUrl = localStorage.getItem('reustafy_api_url') || 'http://localhost:3001';
+      const savedTheme = localStorage.getItem('reustafy_theme');
+
+      if (savedTheme === 'dark') {
+        setDarkMode(true);
+        document.documentElement.classList.add('dark');
+      } else {
+        setDarkMode(false);
+        document.documentElement.classList.remove('dark');
+      }
 
       if (!storedToken || !storedUser) {
         router.push('/');
@@ -48,6 +58,20 @@ export default function KitchenKDS() {
       setApiUrl(storedApiUrl);
     }
   }, [router]);
+
+  const toggleTheme = () => {
+    setDarkMode(prev => {
+      const next = !prev;
+      if (next) {
+        document.documentElement.classList.add('dark');
+        localStorage.setItem('reustafy_theme', 'dark');
+      } else {
+        document.documentElement.classList.remove('dark');
+        localStorage.setItem('reustafy_theme', 'light');
+      }
+      return next;
+    });
+  };
 
   const fetchKDSOrders = async (activeToken: string) => {
     setLoading(true);
@@ -155,24 +179,31 @@ export default function KitchenKDS() {
   };
 
   return (
-    <div className="min-h-screen bg-dark-bg text-slate-100 pb-8 flex flex-col">
+    <div className="min-h-screen bg-slate-50 dark:bg-slate-900 text-slate-800 dark:text-slate-100 pb-8 flex flex-col transition-colors duration-300">
       
       {/* Navbar KDS */}
-      <header className="border-b border-dark-border bg-dark-header backdrop-blur-md px-6 py-4 sticky top-0 z-20 flex justify-between items-center">
-        <button onClick={() => router.push('/dashboard')} className="flex items-center gap-1 text-slate-400 hover:text-white text-xs font-semibold">
+      <header className="border-b border-slate-200 dark:border-slate-800 bg-white/90 dark:bg-slate-900/90 backdrop-blur-md px-6 py-4 sticky top-0 z-20 flex justify-between items-center shadow-xs">
+        <button onClick={() => router.push('/dashboard')} className="flex items-center gap-1 text-slate-600 dark:text-slate-300 hover:text-slate-900 dark:hover:text-white text-xs font-semibold">
           <ArrowLeft className="h-4 w-4" /> Volver
         </button>
-        <span className="font-bold text-sm tracking-wider flex items-center gap-1.5 uppercase">
-          <ChefHat className="h-5 w-5 text-indigo-400" /> Pantalla Cocina KDS
+        <span className="font-bold text-sm tracking-wider flex items-center gap-1.5 uppercase text-slate-900 dark:text-white">
+          <ChefHat className="h-5 w-5 text-indigo-600 dark:text-indigo-400" /> Pantalla Cocina KDS
         </span>
         <div className="flex items-center gap-3">
+          <button
+            onClick={toggleTheme}
+            title={darkMode ? 'Cambiar a Modo Claro' : 'Cambiar a Modo Oscuro'}
+            className="p-2 rounded-lg border border-slate-200 dark:border-slate-700 bg-slate-100 dark:bg-slate-800 text-slate-700 dark:text-slate-200 hover:bg-slate-200 dark:hover:bg-slate-700 transition"
+          >
+            {darkMode ? <Sun className="h-4 w-4 text-amber-400 fill-amber-400/20" /> : <Moon className="h-4 w-4 text-indigo-600 fill-indigo-600/20" />}
+          </button>
           <button 
             onClick={() => token && fetchKDSOrders(token)}
-            className="p-2 bg-white/5 hover:bg-white/10 rounded-lg text-slate-300 hover:text-white transition"
+            className="p-2 bg-slate-100 dark:bg-slate-800 hover:bg-slate-200 dark:hover:bg-slate-700 rounded-lg text-slate-700 dark:text-slate-300 transition border border-slate-200 dark:border-slate-700"
           >
             <RefreshCw className="h-4 w-4" />
           </button>
-          <span className="text-xs bg-indigo-500/20 text-indigo-300 font-bold px-3 py-1 rounded border border-indigo-500/30">
+          <span className="text-xs bg-indigo-50 dark:bg-indigo-500/20 text-indigo-700 dark:text-indigo-300 font-bold px-3 py-1 rounded border border-indigo-200 dark:border-indigo-500/30">
             Cocina: {user?.tenantName}
           </span>
         </div>
@@ -183,12 +214,12 @@ export default function KitchenKDS() {
         
         {loading ? (
           <div className="flex-1 flex items-center justify-center">
-            <RefreshCw className="h-8 w-8 animate-spin text-indigo-400" />
+            <RefreshCw className="h-8 w-8 animate-spin text-indigo-600 dark:text-indigo-400" />
           </div>
         ) : ordersList.length === 0 ? (
-          <div className="flex-1 flex flex-col items-center justify-center text-slate-500">
-            <CheckCircle2 className="h-12 w-12 mb-3 text-emerald-500/60" />
-            <h3 className="font-bold text-lg text-white">¡Cocina al Día!</h3>
+          <div className="flex-1 flex flex-col items-center justify-center text-slate-500 dark:text-slate-400">
+            <CheckCircle2 className="h-12 w-12 mb-3 text-emerald-500" />
+            <h3 className="font-bold text-lg text-slate-900 dark:text-white">¡Cocina al Día!</h3>
             <p className="text-sm">No hay comandas pendientes o en preparación.</p>
           </div>
         ) : (
@@ -198,24 +229,24 @@ export default function KitchenKDS() {
               return (
                 <div 
                   key={order.id} 
-                  className={`w-80 rounded-2xl glass-panel p-5 flex flex-col justify-between shrink-0 border-t-4 border-l ${
-                    order.status === 'pending' ? 'border-t-amber-500 border-white/5' : 'border-t-indigo-500 border-white/5'
+                  className={`w-80 rounded-2xl glass-panel p-5 flex flex-col justify-between shrink-0 border-t-4 ${
+                    order.status === 'pending' ? 'border-t-amber-500' : 'border-t-indigo-500'
                   }`}
                 >
                   
                   {/* Card Header */}
                   <div>
-                    <div className="flex justify-between items-start pb-3 border-b border-white/5">
+                    <div className="flex justify-between items-start pb-3 border-b border-slate-200 dark:border-slate-700/60">
                       <div>
-                        <span className="text-2xl font-black text-white">Mesa {order.tableNumber || '?'}</span>
-                        <span className="text-[10px] text-slate-400 block font-bold mt-0.5 uppercase tracking-wider">Zona: {order.zone || 'Sala'}</span>
+                        <span className="text-2xl font-black text-slate-900 dark:text-white">Mesa {order.tableNumber || '?'}</span>
+                        <span className="text-[10px] text-slate-500 dark:text-slate-400 block font-bold mt-0.5 uppercase tracking-wider">Zona: {order.zone || 'Sala'}</span>
                       </div>
                       <div className="flex flex-col items-end">
-                        <span className="text-[10px] bg-white/5 border border-white/10 px-2 py-0.5 rounded-full flex items-center gap-1 font-semibold">
+                        <span className="text-[10px] bg-slate-100 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 px-2 py-0.5 rounded-full flex items-center gap-1 font-semibold text-slate-700 dark:text-slate-300">
                           <Clock className="h-3 w-3 text-slate-400" /> {minutes} min
                         </span>
-                        <span className={`text-[9px] uppercase font-bold px-1.5 py-0.5 rounded mt-1.5 ${
-                          order.status === 'pending' ? 'bg-amber-500/20 text-amber-300' : 'bg-indigo-500/20 text-indigo-300'
+                        <span className={`text-[9px] uppercase font-extrabold px-2 py-0.5 rounded-full mt-1.5 ${
+                          order.status === 'pending' ? 'bg-amber-100 text-amber-900 dark:bg-amber-950/60 dark:text-amber-300' : 'bg-indigo-100 text-indigo-900 dark:bg-indigo-950/60 dark:text-indigo-300'
                         }`}>
                           {order.status === 'pending' ? 'Por Empezar' : 'Preparando'}
                         </span>
@@ -241,15 +272,15 @@ export default function KitchenKDS() {
                       {order.items.map(item => (
                         <div key={item.id} className="flex justify-between items-center text-xs">
                           <div>
-                            <span className="text-white font-bold">{item.quantity}x</span>
-                            <span className="text-slate-200 ml-2 font-medium">{item.itemName}</span>
+                            <span className="text-slate-900 dark:text-white font-extrabold">{item.quantity}x</span>
+                            <span className="text-slate-700 dark:text-slate-200 ml-2 font-medium">{item.itemName}</span>
                           </div>
 
                           <div className="flex items-center gap-1">
                             {item.status === 'pending' && (
                               <button 
                                 onClick={() => handleUpdateItemStatus(item.id, 'cooking')}
-                                className="text-[10px] bg-amber-500/10 text-amber-400 hover:bg-amber-500/20 px-2 py-1 rounded"
+                                className="text-[10px] font-bold bg-amber-100 text-amber-900 dark:bg-amber-500/20 dark:text-amber-300 hover:bg-amber-200 dark:hover:bg-amber-500/30 px-2 py-1 rounded-md transition"
                               >
                                 Cocinar
                               </button>
@@ -257,13 +288,13 @@ export default function KitchenKDS() {
                             {item.status === 'cooking' && (
                               <button 
                                 onClick={() => handleUpdateItemStatus(item.id, 'served')}
-                                className="text-[10px] bg-indigo-500/10 text-indigo-400 hover:bg-indigo-500/20 px-2 py-1 rounded"
+                                className="text-[10px] font-bold bg-indigo-100 text-indigo-900 dark:bg-indigo-500/20 dark:text-indigo-300 hover:bg-indigo-200 dark:hover:bg-indigo-500/30 px-2 py-1 rounded-md transition"
                               >
                                 Listo
                               </button>
                             )}
                             {item.status === 'served' && (
-                              <span className="text-[10px] text-emerald-400 font-bold">✓ Listo</span>
+                              <span className="text-[10px] text-emerald-600 dark:text-emerald-400 font-extrabold">✓ Listo</span>
                             )}
                           </div>
                         </div>

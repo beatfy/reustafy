@@ -2,7 +2,7 @@
 
 import React, { useEffect, useState } from 'react';
 import { useRouter } from 'next/navigation';
-import { Utensils, Tablet, ShoppingCart, Send, ArrowLeft, RefreshCw, Check } from 'lucide-react';
+import { Utensils, Tablet, ShoppingCart, Send, ArrowLeft, RefreshCw, Check, Sun, Moon } from 'lucide-react';
 
 interface Table {
   id: string;
@@ -17,6 +17,7 @@ export default function WaiterPWA() {
   const [token, setToken] = useState<string | null>(null);
   const [user, setUser] = useState<any>(null);
   const [apiUrl, setApiUrl] = useState('');
+  const [darkMode, setDarkMode] = useState(false);
   
   const [tablesList, setTablesList] = useState<Table[]>([]);
   const [reservationsList, setReservationsList] = useState<any[]>([]);
@@ -42,6 +43,15 @@ export default function WaiterPWA() {
       const storedToken = localStorage.getItem('reustafy_token');
       const storedUser = localStorage.getItem('reustafy_user');
       const storedApiUrl = localStorage.getItem('reustafy_api_url') || 'http://localhost:3001';
+      const savedTheme = localStorage.getItem('reustafy_theme');
+
+      if (savedTheme === 'dark') {
+        setDarkMode(true);
+        document.documentElement.classList.add('dark');
+      } else {
+        setDarkMode(false);
+        document.documentElement.classList.remove('dark');
+      }
 
       if (!storedToken || !storedUser) {
         router.push('/');
@@ -53,6 +63,20 @@ export default function WaiterPWA() {
       setApiUrl(storedApiUrl);
     }
   }, [router]);
+
+  const toggleTheme = () => {
+    setDarkMode(prev => {
+      const next = !prev;
+      if (next) {
+        document.documentElement.classList.add('dark');
+        localStorage.setItem('reustafy_theme', 'dark');
+      } else {
+        document.documentElement.classList.remove('dark');
+        localStorage.setItem('reustafy_theme', 'light');
+      }
+      return next;
+    });
+  };
 
   const fetchTables = async (activeToken: string) => {
     setLoading(true);
@@ -167,26 +191,51 @@ export default function WaiterPWA() {
   };
 
   return (
-    <div className="min-h-screen bg-dark-bg text-slate-100 pb-8 flex flex-col">
+  const getTableCardStyle = (status: Table['status']) => {
+    switch (status) {
+      case 'free':
+        return 'bg-emerald-50 text-emerald-900 border-emerald-300 dark:bg-emerald-950/50 dark:text-emerald-300 dark:border-emerald-700/60 hover:bg-emerald-100/80 shadow-sm';
+      case 'ordered':
+        return 'bg-amber-50 text-amber-900 border-amber-300 dark:bg-amber-950/50 dark:text-amber-300 dark:border-amber-700/60 hover:bg-amber-100/80 shadow-sm';
+      case 'eating':
+        return 'bg-blue-50 text-blue-900 border-blue-300 dark:bg-blue-950/50 dark:text-blue-300 dark:border-blue-700/60 hover:bg-blue-100/80 shadow-sm';
+      case 'bill':
+        return 'bg-rose-50 text-rose-900 border-rose-300 dark:bg-rose-950/50 dark:text-rose-300 dark:border-rose-700/60 hover:bg-rose-100/80 shadow-sm';
+      case 'reserved':
+        return 'bg-purple-50 text-purple-900 border-purple-300 dark:bg-purple-950/50 dark:text-purple-300 dark:border-purple-700/60 hover:bg-purple-100/80 shadow-sm';
+    }
+  };
+
+  return (
+    <div className="min-h-screen bg-slate-50 dark:bg-slate-900 text-slate-800 dark:text-slate-100 pb-8 flex flex-col transition-colors duration-300">
       
       {/* Navbar PWA */}
-      <header className="border-b border-dark-border bg-dark-header backdrop-blur-md px-4 py-3 sticky top-0 z-20 flex justify-between items-center">
-        <button onClick={() => router.push('/dashboard')} className="flex items-center gap-1 text-slate-400 hover:text-white text-xs font-semibold">
+      <header className="border-b border-slate-200 dark:border-slate-800 bg-white/90 dark:bg-slate-900/90 backdrop-blur-md px-4 py-3 sticky top-0 z-20 flex justify-between items-center shadow-xs">
+        <button onClick={() => router.push('/dashboard')} className="flex items-center gap-1 text-slate-600 dark:text-slate-300 hover:text-slate-900 dark:hover:text-white text-xs font-semibold">
           <ArrowLeft className="h-4 w-4" /> Volver
         </button>
-        <span className="font-bold text-sm tracking-wider flex items-center gap-1">
-          <Tablet className="h-4 w-4 text-indigo-400" /> Camarero PWA
+        <span className="font-bold text-sm tracking-wider flex items-center gap-1 text-slate-900 dark:text-white">
+          <Tablet className="h-4 w-4 text-indigo-600 dark:text-indigo-400" /> Camarero PWA
         </span>
-        <span className="text-[10px] bg-indigo-500/20 text-indigo-300 font-bold px-2 py-0.5 rounded border border-indigo-500/30 capitalize">
-          {user?.name}
-        </span>
+        <div className="flex items-center gap-2">
+          <button
+            onClick={toggleTheme}
+            title={darkMode ? 'Cambiar a Modo Claro' : 'Cambiar a Modo Oscuro'}
+            className="p-1.5 rounded-lg border border-slate-200 dark:border-slate-700 bg-slate-100 dark:bg-slate-800 text-slate-700 dark:text-slate-200 hover:bg-slate-200 dark:hover:bg-slate-700 transition"
+          >
+            {darkMode ? <Sun className="h-4 w-4 text-amber-400 fill-amber-400/20" /> : <Moon className="h-4 w-4 text-indigo-600 fill-indigo-600/20" />}
+          </button>
+          <span className="text-[10px] bg-indigo-50 dark:bg-indigo-500/20 text-indigo-700 dark:text-indigo-300 font-bold px-2 py-0.5 rounded border border-indigo-200 dark:border-indigo-500/30 capitalize">
+            {user?.name}
+          </span>
+        </div>
       </header>
 
       <main className="flex-1 p-4 max-w-lg w-full mx-auto space-y-4">
         
         {success && (
-          <div className="p-3 rounded-lg bg-emerald-500/10 border border-emerald-500/30 text-xs text-emerald-300 flex items-center gap-2">
-            <Check className="h-4 w-4" /> ¡Comanda enviada a cocina correctamente!
+          <div className="p-3 rounded-lg bg-emerald-50 dark:bg-emerald-500/10 border border-emerald-200 dark:border-emerald-500/30 text-xs text-emerald-800 dark:text-emerald-300 flex items-center gap-2 font-semibold">
+            <Check className="h-4 w-4 text-emerald-600 dark:text-emerald-400" /> ¡Comanda enviada a cocina correctamente!
           </div>
         )}
 
@@ -195,12 +244,12 @@ export default function WaiterPWA() {
           /* Zone 1: Select Table */
           <div className="space-y-3">
             <div>
-              <h2 className="text-md font-bold text-white uppercase tracking-wider">Selecciona Mesa</h2>
-              <p className="text-[10px] text-slate-400">Selecciona la mesa para abrir comandas.</p>
+              <h2 className="text-md font-bold text-slate-900 dark:text-white uppercase tracking-wider">Selecciona Mesa</h2>
+              <p className="text-[11px] text-slate-500 dark:text-slate-400">Selecciona la mesa para abrir comandas.</p>
             </div>
 
             {loading ? (
-              <div className="flex justify-center py-12"><RefreshCw className="h-6 w-6 animate-spin text-indigo-400" /></div>
+              <div className="flex justify-center py-12"><RefreshCw className="h-6 w-6 animate-spin text-indigo-600 dark:text-indigo-400" /></div>
             ) : (
               <div className="grid grid-cols-3 gap-3">
                  {tablesList.map(t => {
@@ -211,17 +260,15 @@ export default function WaiterPWA() {
                      <button
                        key={t.id}
                        onClick={() => { setSelectedTable(t); setSuccess(false); }}
-                       className={`p-3 rounded-xl border flex flex-col justify-between items-center h-20 transition relative ${
-                         t.status === 'free' ? 'bg-emerald-500/5 border-emerald-500/20 text-emerald-300 hover:bg-emerald-500/10' : 'bg-slate-900/60 border-white/5 text-slate-400 hover:bg-slate-800'
-                       }`}
+                       className={`p-3 rounded-xl border flex flex-col justify-between items-center h-20 transition relative ${getTableCardStyle(t.status)}`}
                      >
                        {tableAllergies && (
-                         <span className="absolute -top-1.5 -right-1 text-[8px] bg-rose-600 text-white font-extrabold px-1.5 py-0.5 rounded-full animate-pulse border border-slate-950">
+                         <span className="absolute -top-1.5 -right-1 text-[8px] bg-rose-600 text-white font-extrabold px-1.5 py-0.5 rounded-full animate-pulse border border-white dark:border-slate-900">
                            ⚠️ ALERGIA
                          </span>
                        )}
-                       <span className="text-xl font-bold">{t.tableNumber}</span>
-                       <span className="text-[9px] uppercase tracking-wider truncate max-w-full">
+                       <span className="text-xl font-black tracking-tight">{t.tableNumber}</span>
+                       <span className="text-[9px] uppercase font-bold tracking-wider truncate max-w-full">
                          {t.status}
                        </span>
                      </button>
@@ -235,16 +282,16 @@ export default function WaiterPWA() {
 
           /* Zone 2: Take Order items */
           <div className="space-y-4">
-                        {/* Table Header */}
-             <div className="flex flex-col gap-2.5 bg-white/5 p-3 rounded-xl border border-white/5">
+             {/* Table Header */}
+             <div className="flex flex-col gap-2.5 glass-panel p-3.5 rounded-xl">
                <div className="flex justify-between items-center">
                  <div>
-                   <span className="text-lg font-bold text-white">Mesa {selectedTable.tableNumber}</span>
-                   <span className="text-xs text-slate-400 block uppercase font-semibold">Zona: {selectedTable.zone}</span>
+                   <span className="text-lg font-black text-slate-900 dark:text-white">Mesa {selectedTable.tableNumber}</span>
+                   <span className="text-xs text-slate-500 dark:text-slate-400 block uppercase font-bold">Zona: {selectedTable.zone}</span>
                  </div>
                  <button 
                    onClick={() => setSelectedTable(null)}
-                   className="text-xs bg-slate-800 hover:bg-slate-700 text-slate-400 px-3 py-1.5 rounded-lg"
+                   className="text-xs bg-slate-100 dark:bg-slate-800 hover:bg-slate-200 dark:hover:bg-slate-700 text-slate-700 dark:text-slate-200 font-semibold px-3 py-1.5 rounded-lg border border-slate-200 dark:border-slate-700 transition"
                  >
                    Cambiar Mesa
                  </button>
@@ -255,8 +302,8 @@ export default function WaiterPWA() {
                  const tableRes = reservationsList.find(r => r.tableId === selectedTable.id && r.status !== 'cancelled');
                  if (tableRes?.allergies) {
                    return (
-                     <div className="p-2 bg-rose-950/40 border border-rose-500/20 rounded-lg text-rose-300 text-[10px] font-bold flex items-center gap-1.5 animate-pulse">
-                       <span>⚠️ ATENCIÓN: Comensal con intolerancias / alergias: <strong className="text-rose-200">{tableRes.allergies}</strong></span>
+                     <div className="p-2.5 bg-rose-50 dark:bg-rose-950/50 border border-rose-200 dark:border-rose-800/60 rounded-lg text-rose-800 dark:text-rose-300 text-xs font-bold flex items-center gap-1.5 animate-pulse">
+                       <span>⚠️ ATENCIÓN: Comensal con intolerancias / alergias: <strong className="text-rose-900 dark:text-rose-200">{tableRes.allergies}</strong></span>
                      </div>
                    );
                  }
@@ -266,16 +313,16 @@ export default function WaiterPWA() {
 
             {/* Menu options */}
             <div className="space-y-2">
-              <h3 className="text-xs font-bold text-slate-400 uppercase tracking-widest">Platos y Bebidas</h3>
+              <h3 className="text-xs font-bold text-slate-500 dark:text-slate-400 uppercase tracking-widest">Platos y Bebidas</h3>
               <div className="grid grid-cols-2 gap-2">
                 {menuItemsList.map(item => (
                   <button
                     key={item.itemName}
                     onClick={() => addToCart(item)}
-                    className="p-2.5 rounded-lg border border-white/5 bg-slate-900/40 text-left hover:bg-slate-800 transition"
+                    className="p-3 rounded-xl border border-slate-200 dark:border-slate-700/70 bg-white dark:bg-slate-800 text-left hover:border-indigo-400 dark:hover:border-indigo-500 transition shadow-xs"
                   >
-                    <span className="font-semibold text-xs text-white block truncate">{item.itemName}</span>
-                    <span className="text-[10px] text-indigo-400 mt-1 block">{item.price.toFixed(2)} €</span>
+                    <span className="font-bold text-xs text-slate-900 dark:text-white block truncate">{item.itemName}</span>
+                    <span className="text-xs font-extrabold text-indigo-600 dark:text-indigo-400 mt-1 block">{item.price.toFixed(2)} €</span>
                   </button>
                 ))}
               </div>
@@ -283,11 +330,11 @@ export default function WaiterPWA() {
 
             {/* Cart Box */}
             <div className="space-y-2">
-              <h3 className="text-xs font-bold text-slate-400 uppercase tracking-widest flex items-center gap-1">
-                <ShoppingCart className="h-3.5 w-3.5" /> Comanda Activa
+              <h3 className="text-xs font-bold text-slate-500 dark:text-slate-400 uppercase tracking-widest flex items-center gap-1">
+                <ShoppingCart className="h-3.5 w-3.5 text-indigo-600 dark:text-indigo-400" /> Comanda Activa
               </h3>
 
-              <div className="p-4 rounded-xl border border-white/5 bg-slate-950/40 space-y-2.5">
+              <div className="p-4 rounded-xl glass-panel space-y-3">
                 {cart.length === 0 ? (
                   <p className="text-xs text-slate-500 text-center py-6">La comanda está vacía.</p>
                 ) : (

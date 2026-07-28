@@ -26,7 +26,9 @@ import {
   Link,
   Trash,
   Users,
-  UserPlus
+  UserPlus,
+  Sun,
+  Moon
 } from 'lucide-react';
 
 interface Table {
@@ -64,6 +66,7 @@ export default function Dashboard() {
   const [token, setToken] = useState<string | null>(null);
   const [user, setUser] = useState<any>(null);
   const [apiUrl, setApiUrl] = useState('');
+  const [darkMode, setDarkMode] = useState(false);
 
   // Domain data
   const [tablesList, setTablesList] = useState<Table[]>([]);
@@ -143,6 +146,15 @@ export default function Dashboard() {
       const storedToken = localStorage.getItem('reustafy_token');
       const storedUser = localStorage.getItem('reustafy_user');
       const storedApiUrl = localStorage.getItem('reustafy_api_url') || 'http://localhost:3001';
+      const savedTheme = localStorage.getItem('reustafy_theme');
+
+      if (savedTheme === 'dark') {
+        setDarkMode(true);
+        document.documentElement.classList.add('dark');
+      } else {
+        setDarkMode(false);
+        document.documentElement.classList.remove('dark');
+      }
 
       if (!storedToken || !storedUser) {
         router.push('/');
@@ -154,6 +166,20 @@ export default function Dashboard() {
       setApiUrl(storedApiUrl);
     }
   }, [router]);
+
+  const toggleTheme = () => {
+    setDarkMode(prev => {
+      const next = !prev;
+      if (next) {
+        document.documentElement.classList.add('dark');
+        localStorage.setItem('reustafy_theme', 'dark');
+      } else {
+        document.documentElement.classList.remove('dark');
+        localStorage.setItem('reustafy_theme', 'light');
+      }
+      return next;
+    });
+  };
 
   // Fetch data
   const fetchData = async (overrideToken?: string) => {
@@ -847,39 +873,39 @@ export default function Dashboard() {
   };
 
   return (
-    <div className="min-h-screen bg-slate-50 flex flex-col text-slate-800 pb-12">
+    <div className="min-h-screen bg-slate-50 dark:bg-slate-900 flex flex-col text-slate-800 dark:text-slate-100 pb-12 transition-colors duration-300">
       
       {/* 1. TOP HEADER NAVIGATION */}
-      <header className="border-b border-slate-200 bg-white/80 backdrop-blur-md sticky top-0 z-30 px-6 py-4 flex flex-col md:flex-row justify-between items-center gap-4">
+      <header className="border-b border-slate-200 dark:border-slate-800 bg-white/90 dark:bg-slate-900/90 backdrop-blur-md sticky top-0 z-30 px-6 py-4 flex flex-col md:flex-row justify-between items-center gap-4 shadow-xs">
         
         {/* Brand */}
         <div className="flex items-center gap-3">
-          <div className="bg-slate-900 p-2 rounded-xl text-white">
+          <div className="bg-indigo-600 p-2 rounded-xl text-white shadow-sm">
             <Utensils className="h-6 w-6" />
           </div>
           <div>
             <div className="flex items-center gap-2">
-              <span className="font-bold text-lg leading-none text-slate-900">Reustafy</span>
-              <span className="text-[10px] uppercase font-bold px-2 py-0.5 rounded-full border border-slate-200 bg-slate-100 text-slate-700">
+              <span className="font-black text-lg leading-none text-slate-900 dark:text-white">Reustafy</span>
+              <span className="text-[10px] uppercase font-bold px-2 py-0.5 rounded-full border border-slate-200 dark:border-slate-700 bg-slate-100 dark:bg-slate-800 text-slate-700 dark:text-slate-300">
                 Tenant: {user.tenantName}
               </span>
             </div>
-            <p className="text-[10px] text-slate-500 mt-1">Conectado como {user.name} ({user.role})</p>
+            <p className="text-[10px] text-slate-500 dark:text-slate-400 mt-1">Conectado como {user.name} ({user.role})</p>
           </div>
         </div>
 
         {/* Dynamic Navigation Tabs */}
-        <div className="flex bg-slate-100 p-1 rounded-xl border border-slate-200 gap-1 text-sm">
+        <div className="flex bg-slate-100 dark:bg-slate-800 p-1 rounded-xl border border-slate-200 dark:border-slate-700 gap-1 text-sm">
           <button 
             onClick={() => setActiveTab('operations')}
-            className={`px-4 py-1.5 rounded-lg font-medium transition flex items-center gap-1.5 ${activeTab === 'operations' ? 'bg-white text-slate-900 shadow-sm border border-slate-200/50' : 'text-slate-600 hover:text-slate-900'}`}
+            className={`px-4 py-1.5 rounded-lg font-bold transition flex items-center gap-1.5 ${activeTab === 'operations' ? 'bg-white dark:bg-slate-900 text-slate-900 dark:text-white shadow-sm border border-slate-200 dark:border-slate-700' : 'text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white'}`}
           >
             <MapPin className="h-4 w-4 text-indigo-500" /> Operaciones
           </button>
           
           <button 
             onClick={() => setActiveTab('marketing')}
-            className={`px-4 py-1.5 rounded-lg font-medium transition flex items-center gap-1.5 ${activeTab === 'marketing' ? 'bg-white text-slate-900 shadow-sm border border-slate-200/50' : 'text-slate-600 hover:text-slate-900'}`}
+            className={`px-4 py-1.5 rounded-lg font-bold transition flex items-center gap-1.5 ${activeTab === 'marketing' ? 'bg-white dark:bg-slate-900 text-slate-900 dark:text-white shadow-sm border border-slate-200 dark:border-slate-700' : 'text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white'}`}
           >
             {!isTierEnough('medium') && <Lock className="h-3 w-3 text-slate-400" />}
             <UserCheck className="h-4 w-4 text-emerald-500" /> Fidelización
@@ -887,7 +913,7 @@ export default function Dashboard() {
           
           <button 
             onClick={() => setActiveTab('finance')}
-            className={`px-4 py-1.5 rounded-lg font-medium transition flex items-center gap-1.5 ${activeTab === 'finance' ? 'bg-white text-slate-900 shadow-sm border border-slate-200/50' : 'text-slate-600 hover:text-slate-900'}`}
+            className={`px-4 py-1.5 rounded-lg font-bold transition flex items-center gap-1.5 ${activeTab === 'finance' ? 'bg-white dark:bg-slate-900 text-slate-900 dark:text-white shadow-sm border border-slate-200 dark:border-slate-700' : 'text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white'}`}
           >
             {!isTierEnough('premium') && <Lock className="h-3 w-3 text-slate-400" />}
             <Coins className="h-4 w-4 text-amber-500" /> Finanzas & BI
@@ -895,7 +921,7 @@ export default function Dashboard() {
           
           <button 
             onClick={() => setActiveTab('config')}
-            className={`px-4 py-1.5 rounded-lg font-medium transition flex items-center gap-1.5 ${activeTab === 'config' ? 'bg-white text-slate-900 shadow-sm border border-slate-200/50' : 'text-slate-600 hover:text-slate-900'}`}
+            className={`px-4 py-1.5 rounded-lg font-bold transition flex items-center gap-1.5 ${activeTab === 'config' ? 'bg-white dark:bg-slate-900 text-slate-900 dark:text-white shadow-sm border border-slate-200 dark:border-slate-700' : 'text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white'}`}
           >
             <Settings className="h-4 w-4 text-slate-500" /> Configuración
           </button>
@@ -904,23 +930,32 @@ export default function Dashboard() {
         {/* Action buttons */}
         <div className="flex items-center gap-3">
           
+          {/* Theme Toggle button */}
+          <button
+            onClick={toggleTheme}
+            title={darkMode ? 'Cambiar a Modo Claro' : 'Cambiar a Modo Oscuro'}
+            className="p-2 rounded-lg border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800 text-slate-700 dark:text-slate-200 hover:bg-slate-100 dark:hover:bg-slate-700 transition"
+          >
+            {darkMode ? <Sun className="h-4 w-4 text-amber-400 fill-amber-400/20" /> : <Moon className="h-4 w-4 text-indigo-600 fill-indigo-600/20" />}
+          </button>
+          
           {/* Quick link to Waiter and Kitchen interfaces */}
           <button 
             onClick={() => router.push('/waiter')}
-            className="flex items-center gap-1.5 px-3 py-1.5 text-xs bg-white hover:bg-slate-100 text-slate-700 border border-slate-200 font-semibold rounded-lg transition"
+            className="flex items-center gap-1.5 px-3 py-1.5 text-xs bg-white dark:bg-slate-800 hover:bg-slate-100 dark:hover:bg-slate-700 text-slate-700 dark:text-slate-200 border border-slate-200 dark:border-slate-700 font-bold rounded-lg transition"
           >
-            <Tablet className="h-3.5 w-3.5" /> Camarero PWA
+            <Tablet className="h-3.5 w-3.5 text-indigo-500" /> Camarero PWA
           </button>
           <button 
             onClick={() => router.push('/kitchen')}
-            className="flex items-center gap-1.5 px-3 py-1.5 text-xs bg-white hover:bg-slate-100 text-slate-700 border border-slate-200 font-semibold rounded-lg transition"
+            className="flex items-center gap-1.5 px-3 py-1.5 text-xs bg-white dark:bg-slate-800 hover:bg-slate-100 dark:hover:bg-slate-700 text-slate-700 dark:text-slate-200 border border-slate-200 dark:border-slate-700 font-bold rounded-lg transition"
           >
-            <ChefHat className="h-3.5 w-3.5" /> Cocina KDS
+            <ChefHat className="h-3.5 w-3.5 text-amber-500" /> Cocina KDS
           </button>
           
           <button 
             onClick={() => fetchData()}
-            className="p-2 bg-white hover:bg-slate-100 rounded-lg text-slate-600 border border-slate-200 transition"
+            className="p-2 bg-white dark:bg-slate-800 hover:bg-slate-100 dark:hover:bg-slate-700 rounded-lg text-slate-600 dark:text-slate-300 border border-slate-200 dark:border-slate-700 transition"
             title="Refrescar datos"
           >
             <RefreshCw className="h-4 w-4" />
@@ -928,7 +963,7 @@ export default function Dashboard() {
           
           <button 
             onClick={handleLogout}
-            className="flex items-center gap-1.5 bg-red-50 hover:bg-red-100 text-red-600 border border-red-200 px-3 py-1.5 text-xs font-semibold rounded-lg transition"
+            className="flex items-center gap-1.5 bg-red-50 dark:bg-red-950/40 hover:bg-red-100 dark:hover:bg-red-900/60 text-red-600 dark:text-red-400 border border-red-200 dark:border-red-800/50 px-3 py-1.5 text-xs font-bold rounded-lg transition"
           >
             <LogOut className="h-3.5 w-3.5" /> Salir
           </button>
