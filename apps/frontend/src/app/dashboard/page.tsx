@@ -429,7 +429,10 @@ export default function Dashboard() {
         body: JSON.stringify({ openingAmount: amount })
       });
 
-      if (!res.ok) throw new Error('Error al registrar apertura de caja');
+      if (!res.ok) {
+        const errorData = await res.json().catch(() => ({}));
+        throw new Error(errorData.error || 'Error al registrar apertura de caja');
+      }
       setOpeningAmountInput('');
       
       await fetchData();

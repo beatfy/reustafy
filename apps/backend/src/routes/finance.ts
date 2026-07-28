@@ -7,10 +7,9 @@ import { requireTier } from '../middleware/subscription';
 export async function financeRoutes(fastify: FastifyInstance) {
   
   fastify.addHook('preHandler', authenticateJWT);
-  fastify.addHook('preHandler', requireTier('premium')); // Premium tier requirement
 
-  // 1. Get financial report (P&L)
-  fastify.get('/pnl', async (req, reply) => {
+  // 1. Get financial report (P&L) - Premium Tier Required
+  fastify.get('/pnl', { preHandler: requireTier('premium') }, async (req, reply) => {
     const tenantId = req.userSession!.tenantId;
 
     try {
@@ -138,7 +137,7 @@ export async function financeRoutes(fastify: FastifyInstance) {
   });
 
   // 2. Get recipe costing (Escandallos)
-  fastify.get('/costing', async (req, reply) => {
+  fastify.get('/costing', { preHandler: requireTier('premium') }, async (req, reply) => {
     return {
       message: 'Coste de recetas (Escandallos) cargado.',
       items: [
