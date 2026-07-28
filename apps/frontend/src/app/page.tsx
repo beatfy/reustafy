@@ -102,7 +102,7 @@ export default function LoginPage() {
         
         {/* Header Logo */}
         <div className="flex items-center space-x-2 mb-4 bg-white/5 border border-white/10 px-4 py-2 rounded-full backdrop-blur-md">
-          <Sparkles className="h-5 w-5 text-indigo-400" />
+          <Sparkles className="h-5 w-5 text-accent-text" />
           <span className="text-sm font-semibold tracking-wider text-slate-300 uppercase">Arquitectura Enterprise Multi-Tenant</span>
         </div>
 
@@ -120,7 +120,7 @@ export default function LoginPage() {
           <div className="md:col-span-7 glass-panel rounded-2xl p-6 md:p-8 flex flex-col justify-between">
             <div>
               <h2 className="text-2xl font-bold text-white mb-4 flex items-center gap-2">
-                <Users className="h-6 w-6 text-indigo-400" />
+                <Users className="h-6 w-6 text-accent-text" />
                 Simulador Multi-Tenant RLS
               </h2>
               <p className="text-sm text-slate-400 mb-6 leading-relaxed">
@@ -144,7 +144,7 @@ export default function LoginPage() {
                       <span className="text-[10px] bg-slate-800 text-slate-300 px-2 py-0.5 rounded">Waiter Juan</span>
                     </div>
                   </div>
-                  <button className="text-xs bg-indigo-600/80 text-white font-semibold py-1.5 px-3 rounded-lg hover:bg-indigo-600 transition flex items-center gap-1 self-end sm:self-center">
+                  <button className="text-xs bg-accent text-white font-semibold py-1.5 px-3 rounded-lg hover:bg-accent-hover transition flex items-center gap-1 self-end sm:self-center">
                     Entrar <LogIn className="h-3 w-3" />
                   </button>
                 </div>
@@ -165,7 +165,7 @@ export default function LoginPage() {
                       <span className="text-[10px] bg-slate-800 text-slate-300 px-2 py-0.5 rounded">Sophia Owner (sophia@legourmet.com)</span>
                     </div>
                   </div>
-                  <button className="text-xs bg-indigo-600/80 text-white font-semibold py-1.5 px-3 rounded-lg hover:bg-indigo-600 transition flex items-center gap-1 self-end sm:self-center">
+                  <button className="text-xs bg-accent text-white font-semibold py-1.5 px-3 rounded-lg hover:bg-accent-hover transition flex items-center gap-1 self-end sm:self-center">
                     Entrar <LogIn className="h-3 w-3" />
                   </button>
                 </div>
@@ -174,7 +174,7 @@ export default function LoginPage() {
             </div>
 
             <div className="mt-6 pt-4 border-t border-white/5 flex items-center justify-between text-xs text-slate-500">
-              <span className="flex items-center gap-1"><Shield className="h-3.5 w-3.5 text-emerald-400" /> PostgreSQL RLS Activado</span>
+              <span className="flex items-center gap-1"><Shield className="h-3.5 w-3.5 text-success-icon" /> PostgreSQL RLS Activado</span>
               <span>Backend en Puerto: 3001</span>
             </div>
 
@@ -189,7 +189,7 @@ export default function LoginPage() {
               </p>
 
               {error && (
-                <div className="p-3 rounded-lg bg-red-500/10 border border-red-500/30 text-xs text-red-300">
+                <div className="p-3 rounded-lg bg-danger-light border border-danger-border text-xs text-danger-text">
                   {error}
                 </div>
               )}
@@ -201,7 +201,7 @@ export default function LoginPage() {
                   required
                   value={backendUrl}
                   onChange={(e) => setBackendUrl(e.target.value)}
-                  className="w-full bg-slate-900/60 border border-white/10 rounded-lg px-3 py-2 text-sm text-slate-300 focus:outline-none focus:border-indigo-500"
+                  className="w-full bg-slate-900/60 border border-white/10 rounded-lg px-3 py-2 text-sm text-slate-300 focus:outline-none focus:border-accent-focus"
                 />
               </div>
 
@@ -213,7 +213,7 @@ export default function LoginPage() {
                   placeholder="ejemplo@restaurante.com"
                   value={email}
                   onChange={(e) => setEmail(e.target.value)}
-                  className="w-full bg-slate-900/60 border border-white/10 rounded-lg px-3 py-2 text-sm text-slate-300 focus:outline-none focus:border-indigo-500"
+                  className="w-full bg-slate-900/60 border border-white/10 rounded-lg px-3 py-2 text-sm text-slate-300 focus:outline-none focus:border-accent-focus"
                 />
               </div>
 
@@ -224,14 +224,14 @@ export default function LoginPage() {
                   required
                   value={password}
                   onChange={(e) => setPassword(e.target.value)}
-                  className="w-full bg-slate-900/60 border border-white/10 rounded-lg px-3 py-2 text-sm text-slate-300 focus:outline-none focus:border-indigo-500"
+                  className="w-full bg-slate-900/60 border border-white/10 rounded-lg px-3 py-2 text-sm text-slate-300 focus:outline-none focus:border-accent-focus"
                 />
               </div>
 
               <button
                 type="submit"
                 disabled={loading}
-                className="w-full bg-indigo-600 text-white font-semibold py-2 px-4 rounded-lg hover:bg-indigo-500 transition duration-200 flex items-center justify-center gap-2 text-sm"
+                className="w-full bg-accent text-white font-semibold py-2 px-4 rounded-lg hover:bg-accent-hover transition duration-200 flex items-center justify-center gap-2 text-sm"
               >
                 {loading ? 'Cargando...' : 'Iniciar Sesión'}
                 <LogIn className="h-4 w-4" />
@@ -248,22 +248,22 @@ export default function LoginPage() {
         {/* Feature Highlights Footer */}
         <div className="grid grid-cols-2 md:grid-cols-4 gap-6 mt-16 w-full text-center">
           <div className="p-4 rounded-xl border border-white/5 bg-white/5 backdrop-blur-md">
-            <LayoutGrid className="mx-auto h-5 w-5 text-indigo-400 mb-2" />
+            <LayoutGrid className="mx-auto h-5 w-5 text-accent-text mb-2" />
             <h4 className="text-xs font-semibold text-white uppercase tracking-wider mb-1">UI Responsive</h4>
             <p className="text-[10px] text-slate-500">Floor map y KDS PWA adaptados a tablet/móvil.</p>
           </div>
           <div className="p-4 rounded-xl border border-white/5 bg-white/5 backdrop-blur-md">
-            <Shield className="mx-auto h-5 w-5 text-indigo-400 mb-2" />
+            <Shield className="mx-auto h-5 w-5 text-accent-text mb-2" />
             <h4 className="text-xs font-semibold text-white uppercase tracking-wider mb-1">Aislamiento RLS</h4>
             <p className="text-[10px] text-slate-500">Separación estricta de base de datos a nivel de SQL.</p>
           </div>
           <div className="p-4 rounded-xl border border-white/5 bg-white/5 backdrop-blur-md">
-            <Utensils className="mx-auto h-5 w-5 text-indigo-400 mb-2" />
+            <Utensils className="mx-auto h-5 w-5 text-accent-text mb-2" />
             <h4 className="text-xs font-semibold text-white uppercase tracking-wider mb-1">KDS & Camarero</h4>
             <p className="text-[10px] text-slate-500">Gestión de comandas y estado de mesa interactivos.</p>
           </div>
           <div className="p-4 rounded-xl border border-white/5 bg-white/5 backdrop-blur-md">
-            <Star className="mx-auto h-5 w-5 text-indigo-400 mb-2" />
+            <Star className="mx-auto h-5 w-5 text-accent-text mb-2" />
             <h4 className="text-xs font-semibold text-white uppercase tracking-wider mb-1">Módulos Capados</h4>
             <p className="text-[10px] text-slate-500">Protección a nivel de API/UI por suscripción.</p>
           </div>
