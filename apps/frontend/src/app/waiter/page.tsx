@@ -282,15 +282,15 @@ export default function WaiterPWA() {
           /* Zone 2: Take Order items */
           <div className="space-y-4">
              {/* Table Header */}
-             <div className="flex flex-col gap-2.5 glass-panel p-3.5 rounded-xl">
+             <div className="flex flex-col gap-2.5 bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700/80 p-4 rounded-2xl shadow-sm">
                <div className="flex justify-between items-center">
                  <div>
-                   <span className="text-lg font-black text-slate-900 dark:text-white">Mesa {selectedTable.tableNumber}</span>
-                   <span className="text-xs text-slate-500 dark:text-slate-400 block uppercase font-bold">Zona: {selectedTable.zone}</span>
+                   <span className="text-xl font-black text-slate-900 dark:text-white">Mesa {selectedTable.tableNumber}</span>
+                   <span className="text-xs text-slate-500 dark:text-slate-400 block uppercase font-bold mt-0.5">Zona: {selectedTable.zone}</span>
                  </div>
                  <button 
                    onClick={() => setSelectedTable(null)}
-                   className="text-xs bg-slate-100 dark:bg-slate-800 hover:bg-slate-200 dark:hover:bg-slate-700 text-slate-700 dark:text-slate-200 font-semibold px-3 py-1.5 rounded-lg border border-slate-200 dark:border-slate-700 transition"
+                   className="text-xs bg-slate-100 dark:bg-slate-700 hover:bg-slate-200 dark:hover:bg-slate-600 text-slate-700 dark:text-slate-200 font-bold px-3 py-1.5 rounded-xl border border-slate-200 dark:border-slate-600 transition"
                  >
                    Cambiar Mesa
                  </button>
@@ -301,8 +301,8 @@ export default function WaiterPWA() {
                  const tableRes = reservationsList.find(r => r.tableId === selectedTable.id && r.status !== 'cancelled');
                  if (tableRes?.allergies) {
                    return (
-                     <div className="p-2.5 bg-rose-50 dark:bg-rose-950/50 border border-rose-200 dark:border-rose-800/60 rounded-lg text-rose-800 dark:text-rose-300 text-xs font-bold flex items-center gap-1.5 animate-pulse">
-                       <span>⚠️ ATENCIÓN: Comensal con intolerancias / alergias: <strong className="text-rose-900 dark:text-rose-200">{tableRes.allergies}</strong></span>
+                     <div className="p-2.5 bg-rose-50 dark:bg-rose-950/60 border border-rose-200 dark:border-rose-800/80 rounded-xl text-rose-900 dark:text-rose-200 text-xs font-bold flex items-center gap-1.5 animate-pulse">
+                       <span>⚠️ ATENCIÓN: Comensal con intolerancias / alergias: <strong className="text-rose-950 dark:text-white">{tableRes.allergies}</strong></span>
                      </div>
                    );
                  }
@@ -318,7 +318,7 @@ export default function WaiterPWA() {
                   <button
                     key={item.itemName}
                     onClick={() => addToCart(item)}
-                    className="p-3 rounded-xl border border-slate-200 dark:border-slate-700/70 bg-white dark:bg-slate-800 text-left hover:border-indigo-400 dark:hover:border-indigo-500 transition shadow-xs"
+                    className="p-3.5 rounded-2xl border border-slate-200 dark:border-slate-700/80 bg-white dark:bg-slate-800 text-left hover:border-indigo-500 dark:hover:border-indigo-400 hover:shadow-md transition"
                   >
                     <span className="font-bold text-xs text-slate-900 dark:text-white block truncate">{item.itemName}</span>
                     <span className="text-xs font-extrabold text-indigo-600 dark:text-indigo-400 mt-1 block">{item.price.toFixed(2)} €</span>
@@ -333,21 +333,21 @@ export default function WaiterPWA() {
                 <ShoppingCart className="h-3.5 w-3.5 text-indigo-600 dark:text-indigo-400" /> Comanda Activa
               </h3>
 
-              <div className="p-4 rounded-xl glass-panel space-y-3">
+              <div className="p-4 rounded-2xl bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700/80 shadow-sm space-y-3">
                 {cart.length === 0 ? (
-                  <p className="text-xs text-slate-500 text-center py-6">La comanda está vacía.</p>
+                  <p className="text-xs text-slate-500 dark:text-slate-400 text-center py-6 font-medium">La comanda está vacía.</p>
                 ) : (
                   <>
-                    <div className="space-y-2 max-h-[180px] overflow-y-auto pr-1">
+                    <div className="space-y-2.5 max-h-[180px] overflow-y-auto pr-1">
                       {cart.map(item => (
-                        <div key={item.itemName} className="flex justify-between items-center text-xs border-b border-white/5 pb-2 last:border-b-0 last:pb-0">
+                        <div key={item.itemName} className="flex justify-between items-center text-xs border-b border-slate-100 dark:border-slate-700/60 pb-2.5 last:border-b-0 last:pb-0">
                           <div>
-                            <span className="font-semibold text-white">{item.itemName}</span>
-                            <span className="text-[10px] text-slate-400 block mt-0.5">Cant: {item.quantity} x {item.price.toFixed(2)}€</span>
+                            <span className="font-bold text-slate-900 dark:text-white">{item.itemName}</span>
+                            <span className="text-[11px] text-slate-500 dark:text-slate-400 block font-semibold mt-0.5">Cant: {item.quantity} x {item.price.toFixed(2)}€</span>
                           </div>
                           <button 
                             onClick={() => removeFromCart(item.itemName)}
-                            className="text-[10px] text-red-400 hover:text-red-300 font-semibold"
+                            className="text-xs text-rose-600 dark:text-rose-400 hover:text-rose-700 font-extrabold"
                           >
                             Quitar
                           </button>
@@ -355,15 +355,15 @@ export default function WaiterPWA() {
                       ))}
                     </div>
 
-                    <div className="pt-2 border-t border-white/10 flex justify-between items-center text-xs font-bold text-white">
+                    <div className="pt-3 border-t border-slate-200 dark:border-slate-700 flex justify-between items-center text-sm font-black text-slate-900 dark:text-white">
                       <span>Total Comanda</span>
-                      <span>{cart.reduce((acc, i) => acc + (i.price * i.quantity), 0).toFixed(2)} €</span>
+                      <span className="text-indigo-600 dark:text-indigo-400">{cart.reduce((acc, i) => acc + (i.price * i.quantity), 0).toFixed(2)} €</span>
                     </div>
 
                     <button
                       onClick={handleSendOrder}
                       disabled={sending}
-                      className="w-full mt-3 bg-indigo-600 hover:bg-indigo-500 disabled:bg-indigo-900 text-white font-bold py-2 px-4 rounded-lg text-xs transition flex justify-center items-center gap-1.5"
+                      className="w-full mt-3 bg-indigo-600 hover:bg-indigo-700 disabled:opacity-50 text-white font-black py-3 px-4 rounded-xl text-xs shadow-md transition flex justify-center items-center gap-1.5"
                     >
                       {sending ? 'Enviando...' : 'Enviar Comanda a Cocina'}
                       <Send className="h-3.5 w-3.5" />

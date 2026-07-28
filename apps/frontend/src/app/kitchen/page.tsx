@@ -229,24 +229,24 @@ export default function KitchenKDS() {
               return (
                 <div 
                   key={order.id} 
-                  className={`w-80 rounded-2xl glass-panel p-5 flex flex-col justify-between shrink-0 border-t-4 ${
+                  className={`w-80 rounded-2xl bg-white dark:bg-slate-800/95 border border-slate-200 dark:border-slate-700/80 shadow-md p-5 flex flex-col justify-between shrink-0 border-t-4 ${
                     order.status === 'pending' ? 'border-t-amber-500' : 'border-t-indigo-500'
                   }`}
                 >
                   
                   {/* Card Header */}
                   <div>
-                    <div className="flex justify-between items-start pb-3 border-b border-slate-200 dark:border-slate-700/60">
+                    <div className="flex justify-between items-start pb-3 border-b border-slate-200 dark:border-slate-700/80">
                       <div>
                         <span className="text-2xl font-black text-slate-900 dark:text-white">Mesa {order.tableNumber || '?'}</span>
-                        <span className="text-[10px] text-slate-500 dark:text-slate-400 block font-bold mt-0.5 uppercase tracking-wider">Zona: {order.zone || 'Sala'}</span>
+                        <span className="text-[11px] text-slate-500 dark:text-slate-400 block font-bold mt-0.5 uppercase tracking-wider">Zona: {order.zone || 'Sala'}</span>
                       </div>
                       <div className="flex flex-col items-end">
-                        <span className="text-[10px] bg-slate-100 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 px-2 py-0.5 rounded-full flex items-center gap-1 font-semibold text-slate-700 dark:text-slate-300">
-                          <Clock className="h-3 w-3 text-slate-400" /> {minutes} min
+                        <span className="text-[10px] bg-slate-100 dark:bg-slate-700/70 border border-slate-200 dark:border-slate-600 px-2.5 py-0.5 rounded-full flex items-center gap-1 font-bold text-slate-700 dark:text-slate-200">
+                          <Clock className="h-3 w-3 text-slate-500 dark:text-slate-400" /> {minutes} min
                         </span>
                         <span className={`text-[9px] uppercase font-extrabold px-2 py-0.5 rounded-full mt-1.5 ${
-                          order.status === 'pending' ? 'bg-amber-100 text-amber-900 dark:bg-amber-950/60 dark:text-amber-300' : 'bg-indigo-100 text-indigo-900 dark:bg-indigo-950/60 dark:text-indigo-300'
+                          order.status === 'pending' ? 'bg-amber-100 text-amber-900 border border-amber-300 dark:bg-amber-950/80 dark:text-amber-300 dark:border-amber-700/60' : 'bg-indigo-100 text-indigo-900 border border-indigo-300 dark:bg-indigo-950/80 dark:text-indigo-300 dark:border-indigo-700/60'
                         }`}>
                           {order.status === 'pending' ? 'Por Empezar' : 'Preparando'}
                         </span>
@@ -259,7 +259,7 @@ export default function KitchenKDS() {
                       const tableRes = table ? reservationsList.find(r => r.tableId === table.id && r.status !== 'cancelled') : null;
                       if (tableRes?.allergies) {
                         return (
-                          <div className="mt-2 p-2 bg-rose-500/10 border border-rose-500/30 rounded-lg text-rose-300 text-[10px] font-bold flex items-center gap-1.5 animate-pulse">
+                          <div className="mt-3 p-2.5 bg-rose-50 dark:bg-rose-950/60 border border-rose-200 dark:border-rose-800/80 rounded-xl text-rose-900 dark:text-rose-200 text-xs font-bold flex items-center gap-1.5 animate-pulse">
                             <span>⚠️ ALERGIA: {tableRes.allergies}</span>
                           </div>
                         );
@@ -270,17 +270,17 @@ export default function KitchenKDS() {
                     {/* Order Items list */}
                     <div className="py-4 space-y-3">
                       {order.items.map(item => (
-                        <div key={item.id} className="flex justify-between items-center text-xs">
+                        <div key={item.id} className="flex justify-between items-center text-xs border-b border-slate-100 dark:border-slate-700/40 pb-2.5 last:border-b-0 last:pb-0">
                           <div>
-                            <span className="text-slate-900 dark:text-white font-extrabold">{item.quantity}x</span>
-                            <span className="text-slate-700 dark:text-slate-200 ml-2 font-medium">{item.itemName}</span>
+                            <span className="text-indigo-600 dark:text-indigo-400 font-black">{item.quantity}x</span>
+                            <span className="text-slate-900 dark:text-slate-100 ml-2 font-bold">{item.itemName}</span>
                           </div>
 
                           <div className="flex items-center gap-1">
                             {item.status === 'pending' && (
                               <button 
                                 onClick={() => handleUpdateItemStatus(item.id, 'cooking')}
-                                className="text-[10px] font-bold bg-amber-100 text-amber-900 dark:bg-amber-500/20 dark:text-amber-300 hover:bg-amber-200 dark:hover:bg-amber-500/30 px-2 py-1 rounded-md transition"
+                                className="text-[11px] font-bold bg-amber-500 hover:bg-amber-600 text-white px-2.5 py-1 rounded-lg transition shadow-xs"
                               >
                                 Cocinar
                               </button>
@@ -288,13 +288,13 @@ export default function KitchenKDS() {
                             {item.status === 'cooking' && (
                               <button 
                                 onClick={() => handleUpdateItemStatus(item.id, 'served')}
-                                className="text-[10px] font-bold bg-indigo-100 text-indigo-900 dark:bg-indigo-500/20 dark:text-indigo-300 hover:bg-indigo-200 dark:hover:bg-indigo-500/30 px-2 py-1 rounded-md transition"
+                                className="text-[11px] font-bold bg-emerald-600 hover:bg-emerald-700 text-white px-2.5 py-1 rounded-lg transition shadow-xs"
                               >
                                 Listo
                               </button>
                             )}
                             {item.status === 'served' && (
-                              <span className="text-[10px] text-emerald-600 dark:text-emerald-400 font-extrabold">✓ Listo</span>
+                              <span className="text-xs text-emerald-600 dark:text-emerald-400 font-extrabold">✓ Listo</span>
                             )}
                           </div>
                         </div>
@@ -303,12 +303,12 @@ export default function KitchenKDS() {
                   </div>
 
                   {/* Card Actions Footer */}
-                  <div className="pt-3 border-t border-white/5 space-y-2">
+                  <div className="pt-3 border-t border-slate-200 dark:border-slate-700/80 space-y-2">
                     {order.status === 'pending' && (
                       <button
                         onClick={() => handleUpdateOrderStatus(order.id, 'cooking')}
                         disabled={updatingId === order.id}
-                        className="w-full bg-amber-600 hover:bg-amber-500 text-white text-xs font-bold py-2 rounded-lg transition"
+                        className="w-full bg-amber-500 hover:bg-amber-600 text-white text-xs font-black py-2.5 rounded-xl transition shadow-xs"
                       >
                         Preparar Comanda Completa
                       </button>
@@ -317,7 +317,7 @@ export default function KitchenKDS() {
                       <button
                         onClick={() => handleUpdateOrderStatus(order.id, 'served')}
                         disabled={updatingId === order.id}
-                        className="w-full bg-emerald-600 hover:bg-emerald-500 text-white text-xs font-bold py-2 rounded-lg transition"
+                        className="w-full bg-emerald-600 hover:bg-emerald-700 text-white text-xs font-black py-2.5 rounded-xl transition shadow-xs"
                       >
                         Comanda Servida (Completar)
                       </button>
