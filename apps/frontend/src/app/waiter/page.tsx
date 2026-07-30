@@ -277,13 +277,14 @@ export default function WaiterPWA() {
   };
 
   const handleProcessPayment = async () => {
-    if (!token || !activeOrder) return;
+    if (!token || !activeOrder || !selectedTable) return;
 
-    let amountToPay = parseFloat(activeOrder.totalAmount);
+    const currentPending = parseFloat((activeOrder as any).pendingAmount || activeOrder.totalAmount);
+    let amountToPay = currentPending;
     let itemIds: string[] = [];
 
     if (paymentMode === 'equal') {
-      amountToPay = amountToPay / splitCount;
+      amountToPay = currentPending / splitCount;
     } else if (paymentMode === 'items') {
       if (selectedItemIdsToPay.length === 0) {
         alert('Selecciona al menos un plato a cobrar');
@@ -330,7 +331,7 @@ export default function WaiterPWA() {
         setSelectedTable(null);
         setActiveOrder(null);
       } else {
-        fetchActiveOrder(activeOrder.id);
+        await fetchActiveOrder(selectedTable.id);
       }
       fetchTablesAndOrders(token);
     } catch (err: any) {
@@ -721,8 +722,8 @@ export default function WaiterPWA() {
               <div className="pt-3 border-t border-border flex justify-between items-center">
                 <span className="text-xs font-bold text-foreground-muted">Importe a Cobrar Ahora:</span>
                 <span className="text-lg font-black text-emerald-500">
-                  {paymentMode === 'full' && `${parseFloat(activeOrder.totalAmount).toFixed(2)} €`}
-                  {paymentMode === 'equal' && `${(parseFloat(activeOrder.totalAmount) / splitCount).toFixed(2)} €`}
+                  {paymentMode === 'full' && `${parseFloat((activeOrder as any).pendingAmount || activeOrder.totalAmount).toFixed(2)} €`}
+                  {paymentMode === 'equal' && `${(parseFloat((activeOrder as any).pendingAmount || activeOrder.totalAmount) / splitCount).toFixed(2)} €`}
                   {paymentMode === 'items' && `${(activeOrder.items || []).filter(i => selectedItemIdsToPay.includes(i.id)).reduce((acc, i) => acc + parseFloat(i.price) * i.quantity, 0).toFixed(2)} €`}
                 </span>
               </div>

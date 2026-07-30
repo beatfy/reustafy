@@ -29,8 +29,7 @@ export async function orderRoutes(fastify: FastifyInstance) {
 
     try {
       const newOrder = await runInTenantContext(tenantId, async (tx: any) => {
-        // Calculate total amount
-        const total = items.reduce((acc, item) => acc + (item.price * item.quantity), 0);
+        const addedTotal = items.reduce((acc, item) => acc + (item.price * item.quantity), 0);
 
         // Check if table exists
         const tableExist = await tx
@@ -45,25 +44,44 @@ export async function orderRoutes(fastify: FastifyInstance) {
 
         const tableNum = tableExist[0].tableNumber;
 
-        // Create Order
-        const [insertedOrder] = await tx
-          .insert(orders)
-          .values({
-            tenantId,
-            tableId,
-            waiterId,
-            status: 'pending',
-            totalAmount: total.toFixed(2)
-          })
-          .returning();
+        // Check for existing active unpaid order on table
+        const existingActive = await tx
+          .select()
+          .from(orders)
+          .where(and(eq(orders.tableId, tableId), ne(orders.status, 'paid')))
+          .limit(1);
+
+        let targetOrder;
+        if (existingActive.length > 0) {
+          targetOrder = existingActive[0];
+          const newTotal = parseFloat(targetOrder.totalAmount) + addedTotal;
+          await tx
+            .update(orders)
+            .set({ totalAmount: newTotal.toFixed(2), updatedAt: new Date() })
+            .where(eq(orders.id, targetOrder.id));
+        } else {
+          const [inserted] = await tx
+            .insert(orders)
+            .values({
+              tenantId,
+              tableId,
+              waiterId,
+              status: 'pending',
+              totalAmount: addedTotal.toFixed(2)
+            })
+            .returning();
+          targetOrder = inserted;
+        }
 
         // Insert Order Items
         const itemsToInsert = items.map((item) => ({
           tenantId,
-          orderId: insertedOrder.id,
+          orderId: targetOrder.id,
           itemName: item.itemName,
           quantity: item.quantity,
           price: item.price.toFixed(2),
+          course: (item as any).course || 'first',
+          isDrink: Boolean((item as any).isDrink),
           status: 'pending' as const
         }));
 
@@ -80,10 +98,10 @@ export async function orderRoutes(fastify: FastifyInstance) {
         await tx.insert(activityLogs).values({
           tenantId,
           userId: waiterId,
-          actionDescription: `Nueva comanda creada en Mesa ${tableNum}: [${itemsList}]. Total: ${total.toFixed(2)}€`
+          actionDescription: `Comanda en Mesa ${tableNum}: +[${itemsList}]. Subtotal añadido: ${addedTotal.toFixed(2)}€`
         });
 
-        return insertedOrder;
+        return targetOrder;
       });
 
       notifyTenant(tenantId, 'ORDER_CREATED', newOrder);
@@ -95,7 +113,7 @@ export async function orderRoutes(fastify: FastifyInstance) {
     }
   });
 
-  // Get all orders (optional filter by tableId, includes items)
+  // Get all orders (optional filter by tableId, includes items & payment calculations)
   fastify.get('/orders', async (req, reply) => {
     const tenantId = req.userSession!.tenantId;
     const { tableId } = req.query as { tableId?: string };
@@ -127,9 +145,21 @@ export async function orderRoutes(fastify: FastifyInstance) {
             .from(orderItems)
             .where(eq(orderItems.orderId, order.id));
           
+          const payments = await tx
+            .select()
+            .from(orderPayments)
+            .where(eq(orderPayments.orderId, order.id));
+
+          const paidAmount = payments.reduce((acc: number, p: any) => acc + parseFloat(p.amount), 0);
+          const totalNum = parseFloat(order.totalAmount);
+          const pendingAmount = Math.max(0, totalNum - paidAmount);
+
           fullOrders.push({
             ...order,
-            items
+            items,
+            payments,
+            paidAmount: paidAmount.toFixed(2),
+            pendingAmount: pendingAmount.toFixed(2)
           });
         }
         return fullOrders;

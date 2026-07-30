@@ -961,12 +961,12 @@ export default function Dashboard() {
  <RefreshCw className="h-4 w-4" />
  </button>
  
- <button 
- onClick={handleLogout}
- className="flex items-center gap-1.5 bg-danger-light hover:bg-danger-light :bg-red-900/60 text-danger-text border border-danger-border px-3 py-1.5 text-xs font-bold rounded-lg transition"
- >
- <LogOut className="h-3.5 w-3.5" /> Salir
- </button>
+  <button 
+  onClick={handleLogout}
+  className="flex items-center gap-1.5 bg-danger-light hover:bg-danger-light text-danger-text border border-danger-border px-3 py-1.5 text-xs font-bold rounded-lg transition"
+  >
+  <LogOut className="h-3.5 w-3.5" /> Salir
+  </button>
  </div>
 
  </header>
@@ -981,6 +981,57 @@ export default function Dashboard() {
  <span>{error}</span>
  </div>
  )}
+
+ {/* -------------------- DATOS DEL DÍA EN CURSO (HOY) -------------------- */}
+ {(() => {
+   const todayStr = new Date().toISOString().split('T')[0];
+   const todayPaidOrders = ordersList.filter(o => o.status === 'paid');
+   const todayTotalSales = todayPaidOrders.reduce((acc, o) => acc + parseFloat(o.totalAmount || '0'), 0);
+   const activeTablesCount = tablesList.filter(t => t.status !== 'free').length;
+   const todayReservations = reservationsList.filter(r => r.status !== 'cancelled');
+
+   return (
+     <section className="bg-card border border-border rounded-2xl p-5 shadow-sm space-y-4">
+       <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-2 border-b border-border-subtle pb-3">
+         <div>
+           <h2 className="text-base font-black text-foreground flex items-center gap-2">
+             <TrendingUp className="h-5 w-5 text-emerald-500" /> Resumen y Datos del Día en Curso ({new Date().toLocaleDateString('es-ES', { weekday: 'long', day: 'numeric', month: 'long' })})
+           </h2>
+           <p className="text-xs text-foreground-muted">Métricas globales del restaurante en tiempo real para el día de hoy.</p>
+         </div>
+         <span className="text-[10px] font-extrabold bg-emerald-500/10 text-emerald-600 border border-emerald-500/20 px-2.5 py-1 rounded-lg uppercase tracking-wider animate-pulse">
+           🔴 EN DIRECTO
+         </span>
+       </div>
+
+       <div className="grid grid-cols-2 sm:grid-cols-4 gap-4">
+         <div className="p-3.5 rounded-xl bg-card-subtle border border-border">
+           <span className="text-[10px] font-bold text-foreground-muted uppercase block">Ventas de Hoy</span>
+           <span className="text-xl font-black text-emerald-500">{todayTotalSales.toFixed(2)} €</span>
+           <span className="text-[10px] text-foreground-muted block mt-0.5">{todayPaidOrders.length} cuentas cobradas</span>
+         </div>
+
+         <div className="p-3.5 rounded-xl bg-card-subtle border border-border">
+           <span className="text-[10px] font-bold text-foreground-muted uppercase block">Fondo Apertura Caja</span>
+           <span className="text-xl font-black text-foreground">{todayOpening ? `${parseFloat(todayOpening.openingAmount).toFixed(2)} €` : 'Sin registrar'}</span>
+           <span className="text-[10px] text-foreground-muted block mt-0.5">Caja inicial turno</span>
+         </div>
+
+         <div className="p-3.5 rounded-xl bg-card-subtle border border-border">
+           <span className="text-[10px] font-bold text-foreground-muted uppercase block">Mesas Ocupadas / Activas</span>
+           <span className="text-xl font-black text-amber-500">{activeTablesCount} / {tablesList.length}</span>
+           <span className="text-[10px] text-foreground-muted block mt-0.5">Mesas en servicio</span>
+         </div>
+
+         <div className="p-3.5 rounded-xl bg-card-subtle border border-border">
+           <span className="text-[10px] font-bold text-foreground-muted uppercase block">Reservas Confirmadas</span>
+           <span className="text-xl font-black text-accent">{todayReservations.length}</span>
+           <span className="text-[10px] text-foreground-muted block mt-0.5">Comensales en agenda</span>
+         </div>
+       </div>
+     </section>
+   );
+ })()}
 
  {/* -------------------- TAB 1: OPERATIONS (BASIC PLAN) -------------------- */}
  {activeTab === 'operations' && (
