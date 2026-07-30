@@ -215,7 +215,12 @@ export async function financeRoutes(fastify: FastifyInstance) {
   fastify.post('/closings', async (req, reply) => {
     const tenantId = req.userSession!.tenantId;
     const userId = req.userSession!.userId;
-    const { actualAmount } = req.body as { actualAmount: number };
+    const { actualAmount, cashAmount, cardAmount, shift } = req.body as {
+      actualAmount: number;
+      cashAmount?: number;
+      cardAmount?: number;
+      shift?: 'midday' | 'night';
+    };
 
     if (actualAmount === undefined || actualAmount < 0) {
       return reply.code(400).send({ error: 'actualAmount is required and must be positive' });
@@ -234,7 +239,7 @@ export async function financeRoutes(fastify: FastifyInstance) {
           .orderBy(desc(registerOpenings.createdAt))
           .limit(1);
 
-        const openingFloat = todayOpenings.length > 0 ? parseFloat(todayOpenings[0].openingAmount) : 0.00;
+        const openingFloatCents = todayOpenings.length > 0 ? Math.round(parseFloat(todayOpenings[0].openingAmount) * 100) : 0;
 
         // Find total paid orders today
         const paidOrders = await tx
@@ -259,12 +264,19 @@ export async function financeRoutes(fastify: FastifyInstance) {
             gte(expenses.createdAt, today)
           );
 
-        // Calculate expected sum (Fondo Apertura + Ventas - Gastos)
-        const totalSales = paidOrders.reduce((acc: number, order: any) => acc + parseFloat(order.totalAmount), 0);
-        const totalExpenses = todayExpenses.reduce((acc: number, exp: any) => acc + parseFloat(exp.amount), 0);
-        const expected = openingFloat + totalSales - totalExpenses;
+        // Calculate expected sum using integer cents to prevent 0.01€ floating point rounding errors
+        const salesCents = paidOrders.reduce((acc: number, order: any) => acc + Math.round(parseFloat(order.totalAmount) * 100), 0);
+        const expensesCents = todayExpenses.reduce((acc: number, exp: any) => acc + Math.round(parseFloat(exp.amount) * 100), 0);
+        const expectedCents = openingFloatCents + salesCents - expensesCents;
         
-        const discrepancy = actualAmount - expected;
+        const actualCents = Math.round(actualAmount * 100);
+        const discrepancyCents = actualCents - expectedCents;
+
+        const expected = expectedCents / 100;
+        const discrepancy = discrepancyCents / 100;
+        const totalSales = salesCents / 100;
+        const totalExpenses = expensesCents / 100;
+        const openingFloat = openingFloatCents / 100;
 
         // Insert Register Closing
         const [inserted] = await tx
@@ -272,14 +284,17 @@ export async function financeRoutes(fastify: FastifyInstance) {
           .values({
             tenantId,
             userId,
+            shift: shift || 'midday',
             expectedAmount: expected.toFixed(2),
             actualAmount: actualAmount.toFixed(2),
+            cashAmount: cashAmount ? cashAmount.toFixed(2) : '0.00',
+            cardAmount: cardAmount ? cardAmount.toFixed(2) : '0.00',
             discrepancy: discrepancy.toFixed(2)
           })
           .returning();
 
         // Create log
-        const descText = `Arqueo de caja ciego realizado. Efectivo contado: ${actualAmount.toFixed(2)}€, Esperado (Apertura ${openingFloat.toFixed(2)} + Ventas ${totalSales.toFixed(2)} - Gastos ${totalExpenses.toFixed(2)}): ${expected.toFixed(2)}€, Descuadre: ${discrepancy.toFixed(2)}€`;
+        const descText = `Arqueo de caja (${shift === 'night' ? 'Noche' : 'Mediodía'}) realizado. Contado: ${actualAmount.toFixed(2)}€ (Efectivo: ${cashAmount?.toFixed(2) || '0.00'}€, Tarjeta: ${cardAmount?.toFixed(2) || '0.00'}€), Esperado: ${expected.toFixed(2)}€, Descuadre: ${discrepancy.toFixed(2)}€`;
         await tx.insert(activityLogs).values({
           tenantId,
           userId,

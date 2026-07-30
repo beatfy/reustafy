@@ -36,6 +36,7 @@ import { loyaltyRoutes } from './routes/loyalty';
 import { configRoutes } from './routes/config';
 import { eventsRoutes } from './routes/events';
 import { menuRoutes } from './routes/menu';
+import { inventoryRoutes } from './routes/inventory';
 
 // Register Routes
 server.register(authRoutes, { prefix: '/api/auth' });
@@ -48,6 +49,7 @@ server.register(loyaltyRoutes, { prefix: '/api' });
 server.register(configRoutes, { prefix: '/api' });
 server.register(eventsRoutes, { prefix: '/api' });
 server.register(menuRoutes, { prefix: '/api' });
+server.register(inventoryRoutes, { prefix: '/api' });
 
 // Health Check
 server.get('/health', async () => {

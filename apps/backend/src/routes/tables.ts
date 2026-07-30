@@ -250,6 +250,7 @@ export async function tableRoutes(fastify: FastifyInstance) {
     }
 
     try {
+      const body = req.body as any;
       const newTable = await runInTenantContext(tenantId, async (tx: any) => {
         const [inserted] = await tx
           .insert(tables)
@@ -257,7 +258,9 @@ export async function tableRoutes(fastify: FastifyInstance) {
             tenantId,
             tableNumber,
             zone,
-            capacity: parseInt(capacity as any)
+            capacity: parseInt(capacity as any),
+            posX: body?.posX !== undefined ? parseInt(body.posX) : 0,
+            posY: body?.posY !== undefined ? parseInt(body.posY) : 0
           })
           .returning();
 
@@ -274,6 +277,41 @@ export async function tableRoutes(fastify: FastifyInstance) {
     } catch (error: any) {
       fastify.log.error(error);
       return reply.code(500).send({ error: error.message || 'Failed to create table' });
+    }
+  });
+
+  // Update table details / position (layout editor)
+  fastify.patch('/tables/:id', async (req, reply) => {
+    const tenantId = req.userSession!.tenantId;
+    const { id } = req.params as { id: string };
+    const { posX, posY, zone, capacity, tableNumber } = req.body as any;
+
+    try {
+      const updatedTable = await runInTenantContext(tenantId, async (tx: any) => {
+        const updateData: any = {};
+        if (posX !== undefined) updateData.posX = parseInt(posX);
+        if (posY !== undefined) updateData.posY = parseInt(posY);
+        if (zone) updateData.zone = zone;
+        if (capacity) updateData.capacity = parseInt(capacity);
+        if (tableNumber) updateData.tableNumber = tableNumber;
+
+        const [updated] = await tx
+          .update(tables)
+          .set(updateData)
+          .where(eq(tables.id, id))
+          .returning();
+
+        if (!updated) {
+          throw new Error('Mesa no encontrada');
+        }
+
+        return updated;
+      });
+
+      return updatedTable;
+    } catch (error: any) {
+      fastify.log.error(error);
+      return reply.code(500).send({ error: error.message || 'Failed to update table' });
     }
   });
 

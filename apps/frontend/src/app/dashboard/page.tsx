@@ -25,10 +25,11 @@ import {
  Settings,
  Link,
  Trash,
- Users,
- UserPlus,
- Sun,
- Moon
+  Users,
+  UserPlus,
+  Sun,
+  Moon,
+  Package
 } from 'lucide-react';
 
 interface Table {
@@ -939,19 +940,18 @@ export default function Dashboard() {
  {darkMode ? <Sun className="h-4 w-4 text-warning fill-warning" /> : <Moon className="h-4 w-4 text-accent-text fill-accent" />}
  </button>
  
- {/* Quick link to Waiter and Kitchen interfaces */}
- <button 
- onClick={() => router.push('/waiter')}
- className="flex items-center gap-1.5 px-3 py-1.5 text-xs bg-card hover:bg-card-alt text-foreground-secondary border border-border font-bold rounded-lg transition"
- >
- <Tablet className="h-3.5 w-3.5 text-accent" /> Camarero PWA
- </button>
- <button 
- onClick={() => router.push('/kitchen')}
- className="flex items-center gap-1.5 px-3 py-1.5 text-xs bg-card hover:bg-card-alt text-foreground-secondary border border-border font-bold rounded-lg transition"
- >
- <ChefHat className="h-3.5 w-3.5 text-warning" /> Cocina KDS
- </button>
+  <button 
+  onClick={() => router.push('/waiter')}
+  className="flex items-center gap-1.5 px-3 py-1.5 text-xs bg-card hover:bg-card-alt text-foreground-secondary border border-border font-bold rounded-lg transition"
+  >
+  <Tablet className="h-3.5 w-3.5 text-accent" /> Camarero TPV
+  </button>
+  <button 
+  onClick={() => router.push('/inventory')}
+  className="flex items-center gap-1.5 px-3 py-1.5 text-xs bg-card hover:bg-card-alt text-foreground-secondary border border-border font-bold rounded-lg transition"
+  >
+  <Package className="h-3.5 w-3.5 text-accent" /> Almacén
+  </button>
  
  <button 
  onClick={() => fetchData()}
